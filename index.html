@@ -5,137 +5,218 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to BLDEACET</title>
     <link rel="icon" type="image/png" href="img/IIITV_Logo_1x1_small.png">
-
-    <!-- Correct Google Font link -->
-    <link href="https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap 5 CDN (corrected version) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhgg6njV5iURz5R7bZzOfmSiCwZbtfsB5z5G9c/H9S18cULyRbIXDP" crossorigin="anonymous">
-
-    <!-- Optional Font Awesome -->
-    <link href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" rel="stylesheet">
-
-    <!-- External CSS file (make sure the path is correct) -->
-    <link rel="stylesheet" type="text/css" href="n.css">
+    <link href='https://fonts.googleapis.com/css?family=Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body id="home">
-
     <div class="wrapper">
+        <!-- Header -->
         <header id="header">
-            <!-- Header section -->
             <div class="header-wrapper">
                 <div class="header-container">
                     <div class="logo-name">
                         <div class="logo">
-                            <a href="index.html" title="">
-                                <img src="https://github.com/prajwaldiggavi/BlDE/blob/main/college_logo.png?raw=true" alt="Logo">
-                            </a>
+                            <a href="index.html"><img src="img/BLD.png" alt="logo"></a>
                         </div>
                         <div class="name">
-                            <a href="index.html" title="">
+                            <a href="index.html">
                                 <h5>DEPARTMENT OF INFORMATION SCIENCE AND ENGINEERING</h5>
                                 <h5 class="primary-color">BLDEACET</h5>
                             </a>
                         </div>
                     </div>
+                    <div class="header-links">
+                        <a href="https://www.google.com/maps?ll=16.847732,75.718501&z=17&t=m&hl=en&gl=IN&mapclient=embed&cid=6385882878560726955" target="_blank" title="Open in Google Maps">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </a>
+                        <a href="#" data-toggle="popover" title="Phone No." data-content="+91-79-29750281" data-placement="bottom">
+                            <i class="fas fa-phone"></i>
+                        </a>
+                        <a href="https://www.youtube.com/@bldeacetmedia7621" target="_blank" title="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="https://www.instagram.com/bldeacetmedia/" target="_blank" title="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://twitter.com/bldeacet" target="_blank" title="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
-
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">BLDEACET</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="next.html">Student Details Entry</a>
+            <!-- Navigation -->
+            <nav class="navbar navbar-inverse navbar-custom" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-nav">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div class="collapse navbar-collapse" id="main-nav">
+                        <ul class="nav navbar-nav">
+                            <li><a href="next.html">Student Details Entry</a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Faculty <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="faculty.html">Staff Details</a></li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="faculty.html">Faculty</a>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="faq.html">Academic Calendar</a></li>
+                                    <li><a href="student_corner.html">Student's Corner</a></li>
+                                    <li><a href="http://moodle.iiitv.ac.in" target="_blank">Moodle</a></li>
+                                    <li><a href="library.html">Library</a></li>
+                                    <li><a href="invited_talks.html">Invited Talks</a></li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="timee.html">Automative Timetable</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="gallery.html">Photo Gallery</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="attend3.html">Attendance</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="ser.html">E Notes</a>
-                            </li>
+                            <li><a href="timee.html">AUTOMATIVE_TIMETABLE</a></li>
+                            <li><a href="gallery.html">Photo Gallery</a></li>
+                            <li><a href="attend3.html">Attendance</a></li>
+                            <li><a href="ser.html">E Notes</a></li>
                         </ul>
                     </div>
                 </div>
             </nav>
         </header>
 
-        <!-- Carousel section -->
+        <!-- Carousel -->
         <div class="carousel-wrapper">
-            <div class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="img/gallery/lab.jpeg" class="d-block w-100" alt="Faculty">
+            <div class="carousel">
+                <div><img src="img/gallery/lab.jpeg" alt="Faculty"></div>
+                <div><img src="img/lab3.webp" alt="Gallery"></div>
+                <div><img src="img/thumbnail/k.jpg" alt="Students"></div>
+                <div><img src="img/gallery/lab4.webp" alt="Talk"></div>
+                <div><img src="img/gallery/lab6.jpg" alt="Winners"></div>
+            </div>
+        </div>
+
+        <!-- Widgets -->
+        <div class="widgets-wrapper">
+            <div class="container">
+                <div class="alert alert-warning text-center">
+                    Institute invites applications for <a class="alert-link" href="http://pgadmissions.iiitvadodara.ac.in/">UG and PhD programs - Academic Year 2024-25</a>
+                </div>
+                <div class="row">
+                    <!-- Announcements -->
+                    <div class="col-sm-4">
+                        <div class="widget-box">
+                            <h2>Announcements</h2>
+                            <ul id="announcement-list">
+                                <li>For admissions to <b>UG and PG Programs</b><br><a href="https://www.bldeacet.ac.in/admission-and-fees-structure.php" target="_blank">UG-Admission-Portal</a></li>
+                                <li>For queries related to <b>B.Tech. programs</b> contact us at: <a href="mailto:info@bldeacet.ac.in">ADMISSION</a></li>
+                                <li>Government of India Schemes for Students' Welfare <a href="https://www.vidyalakshmi.co.in/Students/indexPopup" target="_blank">www.ssp.in</a> <a href="https://www.scholarships.gov.in/main.do" target="_blank">www.scholarships.gov.in</a></li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="carousel-item">
-                        <img src="img/lab3.webp" class="d-block w-100" alt="Gallery">
+                    <!-- Events -->
+                    <div class="col-sm-4">
+                        <div class="widget-box">
+                            <h2>Events</h2>
+                            <ul id="events-list">
+                                <li>
+                                    <div class="event-date">
+                                        <span class="day">29</span>
+                                        <span class="month">OCT</span>
+                                    </div>
+                                    <div class="event-details">Fresher Party</div>
+                                </li>
+                                <li>
+                                    <div class="event-date">
+                                        <span class="day">28</span>
+                                        <span class="month">OCT</span>
+                                    </div>
+                                    <div class="event-details">Project Demo</div>
+                                </li>
+                                <li>
+                                    <div class="event-date">
+                                        <span class="day">14</span>
+                                        <span class="month">OCT</span>
+                                    </div>
+                                    <div class="event-details">IEE WEEK</div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="carousel-item">
-                        <img src="https://github.com/prajwaldiggavi/BlDE/blob/image/lab.jpeg?raw=true" class="d-block w-100" alt="Students">
+                    <!-- News -->
+                    <div class="col-sm-4">
+                        <div class="widget-box">
+                            <h2>News</h2>
+                            <ul id="news-list">
+                                <li>5 students of 7th sem got placed in various MNC</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target=".carousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target=".carousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
             </div>
         </div>
 
         <!-- Footer -->
-        <footer class="bg-dark text-white py-4">
+        <footer>
             <div class="container">
                 <div class="row">
-                    <div class="col-md-4">
-                        <strong>Address: </strong>
+                    <div class="col-sm-4">
+                        <img src="img/BLD.png" alt="BLDEACET Logo" class="footer-logo">
+                        <p><strong>Address:</strong><br>
                         BLDEA's V.P. Dr. P.G. Halakatti College of Engineering and Technology<br>
-                        Ashram Road, Vijayapura-586101<br>
-                        Phone: 08352-261120<br>
-                        Email: principal@bldeacet.ac.in<br>
-                        Web: bldeacet.ac.in
+                        Ashram Road, Vijayapura-586101</p>
+                        <p>Phone: 08352-261120<br>
+                        Fax: 08352-262945<br>
+                        Email: <a href="mailto:info@bldeacet.ac.in">info@bldeacet.ac.in</a><br>
+                        Web: <a href="https://bldeacet.ac.in">bldeacet.ac.in</a></p>
                     </div>
-                    <div class="col-md-4">
-                        <a href="#news" class="text-white">News</a><br>
-                        <a href="#announcements" class="text-white">Announcements</a><br>
-                        <a href="#events" class="text-white">Events</a>
+                    <div class="col-sm-4">
+                        <h3>Quick Links</h3>
+                        <ul class="footer-links">
+                            <li><a href="#news">News</a></li>
+                            <li><a href="#announcements">Announcements</a></li>
+                            <li><a href="#events">Events</a></li>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="rti.html">RTI</a></li>
+                            <li><a href="pdf/MOU.pdf">MOU</a></li>
+                            <li><a href="admissions.html">Admission</a></li>
+                            <li><a href="student_corner.html">Student</a></li>
+                            <li><a href="faculty.html">Faculty</a></li>
+                        </ul>
                     </div>
-                    <div class="col-md-4 text-center">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-github"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                    <div class="col-sm-4">
+                        <h3>Connect With Us</h3>
+                        <div class="footer-social">
+                            <a href="#!" title="Facebook"><i class="fab fa-facebook"></i></a>
+                            <a href="https://github.com/iiitv" title="Github"><i class="fab fa-github"></i></a>
+                            <a href="#!" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                            <a href="#!" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
         </footer>
-
     </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-GLhlTQ8iRABQ5Tq0lIo1H2MaaRzUfl7c+I6F1xY84Gmj5el9BvY1eFovz8lROgt9z" crossorigin="anonymous"></script>
-
-    <!-- Optional jQuery if needed (though Bootstrap 5 doesn't require it) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- External JS file (make sure the path is correct) -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.carousel').slick({
+                dots: true,
+                infinite: true,
+                speed: 500,
+                slidesToShow: 1,
+                adaptiveHeight: true
+            });
+
+            $('[data-toggle="popover"]').popover();
+        });
+    </script>
 </body>
 </html>
 
