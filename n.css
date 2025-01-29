@@ -462,136 +462,66 @@ nav ul li{
 	overflow: hidden;
 	border: 3px solid rgb(15,108,107);
 	border-bottom: 0;
-	border-top: 0;
 }
-
-/****************
- *Gallery Style
- ***************/
-
-
+/* Gallery Design - Main Container */
 .gallery-design {
-	text-align: center;
-	/*padding: 1em 1em 2em 1em;*/
-	/*background-color: rgba(220, 220, 220, 0.5);*/
+    width: 100%;
+    max-width: 1200px; /* Adjust max-width as needed */
+    margin: 0 auto; /* Center the gallery on the page */
+    padding: 20px; /* Add padding around the gallery */
+    box-sizing: border-box; /* Ensure padding is included in width */
 }
+
+/* Grid Layout */
 .gallery-design .grid {
-	margin-left: 4.3em;
-	margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
+    gap: 15px; /* Space between grid items */
+    margin-top: 40px; /* Adjust top margin as needed */
+    margin-left: 0; /* Remove extra margin */
+    width: 100%; /* Ensure grid takes full width */
 }
 
-.gallery-design .title {
-	margin-bottom: 3em;
-}
-
-.gallery-design .title h1 {
-	display: inline-block;
-	font-size: 2em;
-	font-weight: lighter;
-	margin-bottom: 0;
-	/*background-color: rgb(15,108,107);*/
-	border: 0;
-	color: rgb(15,108,107);
-	padding: 10px 30px;
-}
-.gallery-design .title h1.title-design {
-	background-color: #ef4c3c;
-}
-.gallery-design .iso-filter-container {
-	display: block;
-	text-align: center;
-}
-.gallery-design .iso-filter-container .iso-filter-buttons {
-	display: inline-flex;
-}
-
-.gallery-design .iso-filter-container .iso-filter-buttons .iso-filter {
-	color: rgba(13, 36, 54, 0.84);
-	font-size: 1em;
-	cursor: pointer;
-	display: inline-block;
-	padding: 20px 35px;
-	margin: 0;
-	border: 1px solid rgba(13, 36, 54, 0.84);
-	border-right: 0;
-	transition: 0.3s;
-}
-.gallery-design .iso-filter-container .iso-filter-buttons .iso-filter:last-child {
-	border-right: 1px solid rgba(13, 36, 54, 0.84);
-}
-.gallery-design .iso-filter-container .iso-filter-buttons .iso-filter.active {
-	background-color: rgba(13, 36, 54, 0.84);
-	color: white;
-
-}
-.gallery-design .grid-sizer,
+/* Grid Items */
 .gallery-design .grid-item {
-	width: 25%;
+    width: 100%;
+    max-width: 100%; /* Ensure items do not exceed container */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Center items vertically */
+    overflow: hidden; /* Hide overflow for images */
+    border-radius: 8px; /* Optional: Rounded corners for grid items */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for depth */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
 }
-.gallery-design .grid:after {
-	content: '';
-	display: block;
-	clear: both;
-}
-.gallery-design .gutter-sizer {
-	width: 5px;
-}
-.gallery-design .grid-item {
-	text-decoration: none;
-	float: left;
-}
-.gallery-design .grid-item:hover, .gallery-design .grid-item:focus {
-	text-decoration: none;
-	outline: 0;
-}
-.gallery-design .grid-item .desc {
-	position: absolute;
-	overflow: hidden;
-	color: white;
-	height: 100%;
-	width: 100%;
-	padding: 0.5em;
-	box-sizing: border-box;
-}
-.gallery-design .grid-item .desc .desc-title {
-	align-items: flex-end;
-	display: flex;
-	box-sizing: border-box;
-	height: 100%;
-	width: 100%;
-	overflow: hidden;
-	transition: all 0.3s;
-}
-.gallery-design .grid-item .desc .desc-title:hover {
-	cursor: zoom-in;
-	background-color: rgba(0, 0, 0, 0.25);
 
+/* Hover Effect for Grid Items */
+.gallery-design .grid-item:hover {
+    transform: scale(1.05); /* Slightly enlarge on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
 }
-.gallery-design .grid-item .desc .desc-title:hover span {
-	transform: translateY(0);
-}
-.gallery-design .grid-item .desc .desc-title span {
-	transform: translateY(120%);
-	height: 30px;
-	width: 100%;
-	display: inline-block;
-	box-sizing: border-box;
-	background-color: rgb(15,108,107);;
-	font-size: 1em;
-	line-height: 1.8em;
-	transition: transform 0.3s;
-}
+
+/* Images Inside Grid Items */
 .gallery-design .grid-item img {
-	box-sizing: border-box;
-	padding: 0.5em;
-	display: block;
-	width: 100%;
-	cursor: zoom-in;
+    width: 100%;
+    height: 100%; /* Ensure images fill the grid item */
+    object-fit: cover; /* Maintain aspect ratio and cover the area */
+    border-radius: 8px; /* Match grid item border radius */
 }
 
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .gallery-design .grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Smaller columns for tablets */
+        gap: 10px; /* Reduce gap for smaller screens */
+    }
+}
 
-#gallery .contents-wrapper{
-    margin-top: 1em;
+@media (max-width: 480px) {
+    .gallery-design .grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Smaller columns for mobile */
+        gap: 8px; /* Further reduce gap for mobile */
+    }
 }
 
 .navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus{
