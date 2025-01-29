@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Timetable Generator</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Oxygen', sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .semester-inputs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .semester {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 30%;
+        }
+
+        .semester h2 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #timetables-container {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .action-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .action-buttons button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Timetable Generator</h1>
+
+    <div class="semester-inputs">
+        <div class="semester">
+            <h2>Semester 5</h2>
+            <label for="num-subjects-sem-1">Number of Subjects:</label>
+            <input type="number" id="num-subjects-sem-1" min="1" value="5">
+            <button onclick="addSubjects(1)">Add Subjects</button>
+            <div id="subject-inputs-sem-1"></div>
+
+            <label for="num-labs-sem-1">Number of Labs:</label>
+            <input type="number" id="num-labs-sem-1" min="0" value="2">
+            <button onclick="addLabs(1)">Add Labs</button>
+            <div id="lab-inputs-sem-1"></div>
+        </div>
+
+        <div class="semester">
+            <h2>Semester 7</h2>
+            <label for="num-subjects-sem-2">Number of Subjects:</label>
+            <input type="number" id="num-subjects-sem-2" min="1" value="5">
+            <button onclick="addSubjects(2)">Add Subjects</button>
+            <div id="subject-inputs-sem-2"></div>
+
+            <label for="num-labs-sem-2">Number of Labs:</label>
+            <input type="number" id="num-labs-sem-2" min="0" value="2">
+            <button onclick="addLabs(2)">Add Labs</button>
+            <div id="lab-inputs-sem-2"></div>
+        </div>
+
+        <div class="semester">
+            <h2>Semester 3</h2>
+            <label for="num-subjects-sem-3">Number of Subjects:</label>
+            <input type="number" id="num-subjects-sem-3" min="1" value="5">
+            <button onclick="addSubjects(3)">Add Subjects</button>
+            <div id="subject-inputs-sem-3"></div>
+
+            <label for="num-labs-sem-3">Number of Labs:</label>
+            <input type="number" id="num-labs-sem-3" min="0" value="2">
+            <button onclick="addLabs(3)">Add Labs</button>
+            <div id="lab-inputs-sem-3"></div>
+        </div>
+    </div>
+
+    <button onclick="generateTimetables()">Generate Timetables</button>
+
+    <div id="timetables-container">
+        <div id="timetable-sem-1"></div>
+        <div id="timetable-sem-2"></div>
+        <div id="timetable-sem-3"></div>
+    </div>
+
+    <div class="action-buttons">
+        <button onclick="printTimetables()">Print Timetables</button>
+        <button onclick="saveTimetables()">Save Timetables as Text</button>
+        <button onclick="enableEditing()">Edit Timetables</button>
+    </div>
+
+    <script>
+        let teachers = ["Teacher1", "Teacher2", "Teacher3", "Teacher4", "Teacher5"];
+        let subjectsSem1 = [];
+        let labsSem1 = [];
+        let subjectsSem2 = [];
+        let labsSem2 = [];
+        let subjectsSem3 = [];
+        let labsSem3 = [];
+
+        function addSubjects(semester) {
+            let numSubjects = document.getElementById(`num-subjects-sem-${semester}`).value;
+            let subjectInputs = document.getElementById(`subject-inputs-sem-${semester}`);
+            subjectInputs.innerHTML = '';
+
+            for (let i = 0; i < numSubjects; i++) {
+                subjectInputs.innerHTML += `
+                    <div>
+                        <label for="subject-${semester}-${i}">Subject ${i + 1}:</label>
+                        <input type="text" id="subject-${semester}-${i}" placeholder="Subject Name">
+                        <select id="teacher-${semester}-${i}">
+                            ${teachers.map(teacher => `<option value="${teacher}">${teacher}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+        }
+
+        function addLabs(semester) {
+            let numLabs = document.getElementById(`num-labs-sem-${semester}`).value;
+            let labInputs = document.getElementById(`lab-inputs-sem-${semester}`);
+            labInputs.innerHTML = '';
+
+            for (let i = 0; i < numLabs; i++) {
+                labInputs.innerHTML += `
+                    <div>
+                        <label for="lab-${semester}-${i}">Lab ${i + 1}:</label>
+                        <input type="text" id="lab-${semester}-${i}" placeholder="Lab Name">
+                        <select id="lab-teacher-${semester}-${i}">
+                            ${teachers.map(teacher => `<option value="${teacher}">${teacher}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+        }
+
+        function generateTimetables() {
+            let timetablesContainer = document.getElementById('timetables-container');
+            timetablesContainer.innerHTML = '';
+
+            for (let semester = 1; semester <= 3; semester++) {
+                let numSubjects = document.getElementById(`num-subjects-sem-${semester}`).value;
+                let numLabs = document.getElementById(`num-labs-sem-${semester}`).value;
+
+                let subjects = [];
+                for (let i = 0; i < numSubjects; i++) {
+                    let subject = document.getElementById(`subject-${semester}-${i}`).value;
+                    let teacher = document.getElementById(`teacher-${semester}-${i}`).value;
+                    subjects.push({ subject, teacher });
+                }
+
+                let labs = [];
+                for (let i = 0; i < numLabs; i++) {
+                    let lab = document.getElementById(`lab-${semester}-${i}`).value;
+                    let teacher = document.getElementById(`lab-teacher-${semester}-${i}`).value;
+                    labs.push({ lab, teacher });
+                }
+
+                let timetable = generateTimetable(subjects, labs);
+                let timetableDiv = document.createElement('div');
+                timetableDiv.innerHTML = `<h2>Semester ${semester} Timetable</h2>${timetable}`;
+                timetablesContainer.appendChild(timetableDiv);
+            }
+        }
+
+        function generateTimetable(subjects, labs) {
+            let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            let timetable = '<table border="1"><tr><th>Time</th>';
+            days.forEach(day => timetable += `<th>${day}</th>`);
+            timetable += '</tr>';
+
+            let times = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'];
+            let teacherSchedule = {};
+
+            times.forEach(time => {
+                timetable += `<tr><td>${time}</td>`;
+                days.forEach(day => {
+                    let slot = findAvailableSlot(subjects, labs, teacherSchedule, time, day);
+                    timetable += `<td>${slot}</td>`;
+                });
+                timetable += '</tr>';
+            });
+
+            timetable += '</table>';
+            return timetable;
+        }
+
+        function findAvailableSlot(subjects, labs, teacherSchedule, time, day) {
+            let availableSubjects = subjects.filter(subject => !teacherSchedule[subject.teacher] || !teacherSchedule[subject.teacher].includes(time));
+            let availableLabs = labs.filter(lab => !teacherSchedule[lab.teacher] || !teacherSchedule[lab.teacher].includes(time));
+
+            if (availableSubjects.length > 0) {
+                let subject = availableSubjects[0];
+                teacherSchedule[subject.teacher] = teacherSchedule[subject.teacher] || [];
+                teacherSchedule[subject.teacher].push(time);
+                return `${subject.subject} (${subject.teacher})`;
+            } else if (availableLabs.length > 0) {
+                let lab = availableLabs[0];
+                teacherSchedule[lab.teacher] = teacherSchedule[lab.teacher] || [];
+                teacherSchedule[lab.teacher].push(time);
+                return `${lab.lab} (${lab.teacher})`;
+            } else {
+                return 'Free';
+            }
+        }
+
+        function printTimetables() {
+            window.print();
+        }
+
+        function saveTimetables() {
+            let timetables = document.getElementById('timetables-container').innerText;
+            let blob = new Blob([timetables], { type: 'text/plain' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'timetables.txt';
+            link.click();
+        }
+
+        function enableEditing() {
+            let timetables = document.getElementById('timetables-container');
+            timetables.contentEditable = true;
+            timetables.style.border = '1px solid #000';
+        }
+    </script>
+</body>
+
+</html>
