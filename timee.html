@@ -3,100 +3,106 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Timetable Generator</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: 'Oxygen', sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .semester-inputs {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-
-        .semester {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 30%;
-        }
-
-        .semester h2 {
-            margin-top: 0;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 5px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #timetables-container {
-            margin-top: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid #ddd;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #007bff;
-            color: #fff;
-        }
-
-        .action-buttons {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .action-buttons button {
-            margin: 0 10px;
-        }
-    </style>
+    <title>Welcome to bldeacet</title>
+    <link rel="icon" type="image/png" href="img/IIITV_Logo_1x1_small.png">
+    <link href='https://fonts.googleapis.com/css?family=Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="n.css">
+    <link rel="stylesheet" href="timee.css">
+    
 </head>
 
+<body id="home">
+<!-- Start Your Body Code From here -->
+<div class="wrapper">
+    <!-- header starts here -->
+    <header id="header" class="">
+        <!-- header -->
+        <div class="header-wrapper">
+            <div class="header-container">
+                <div>
+                    <div class="logo-name">
+                        <div class="logo"><a href="" title=""><img src="https://github.com/prajwaldiggavi/BlDE/blob/image/BLD.png?raw=true
+"
+                                                                             alt="logo"></a></div>
+                        <div class="name">
+                            <a href="index.html" title="">
+                                <h5>DEPARTMENT OF INFORMATION SCINCE AND ENGINEERING</h5>
+                                <h5 class="primary-color">BLDEACET</h5>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-links">
+                    <a href="https://www.google.com/maps?ll=16.847732,75.718501&z=17&t=m&hl=en&gl=IN&mapclient=embed&cid=6385882878560726955" target="_blank" title="Open in Google Maps">
+                        <i class="fa fa-map-marker fa-lg" style="color: #FF5733;" aria-hidden="true"></i>
+                    </a>
+                
+                    <a href="#" data-toggle="popover" title="Phone No." data-content="+91-79-29750281"
+                       data-placement="bottom"><i class="fa fa-phone fa-lg" aria-hidden="true"></i></a>
+                       <a href="https://www.youtube.com/@bldeacetmedia7621" target="_blank" title="YouTube">
+                        <i class="fa fa-youtube fa-lg" style="color: #FF0000;" aria-hidden="true"></i>
+                    </a>
+                
+                    <!-- Social Media Links with Colored Logos -->
+                    <a href="https://www.instagram.com/bldeacetmedia/" target="_blank" title="Instagram">
+                        <i class="fa fa-instagram fa-lg" style="color: #C13584;" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://x.com/i/flow/login?redirect_after_login=%2Fbldeacet" target="_blank" title="Twitter">
+                        <i class="fa fa-twitter fa-lg" style="color: #1DA1F2;" aria-hidden="true"></i>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        <nav>
+            <nav>
+                <div class="navbar navbar-inverse navbar-custom" role="navigation">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                        <div class="collapse navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="next.html">Student Details Entry</a></li>
+
+                                <li>
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                        faculty<b class="caret"></b></a>
+                                    <ul class="dropdown-menu multi-level">
+                                        <li><a href="faculty.html">staff details</a></li>
+                                        
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>
+                                    <ul class="dropdown-menu multi-level">
+                                        <li><a href="faq.html">Acadamic calender</a></li>
+                                        <li><a href="student_corner.html">Student's Corner</a></li>
+                                        <li><a href="http://moodle.iiitv.ac.in" target="_blank">Moodle</a></li>
+                                        <li><a href="library.html">Library</a></li>
+                                        <li><a href="invited_talks.html">Invited Talks</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="timee.html">AUTOMATIVE_TIMETABLE</a></li>
+                                <li><a href="gallery.html">Photo Gallery</a></li>
+                                <li><a href="attend3.html">Attendance</a></li> <!-- New Attendance Link -->
+                                <li><a href="ser.html">E Notes</a></li> <!-- New Marks Entry Link -->
+                            </ul>
+                        </div>
+                        <!--/.nav-collapse -->
+                    </div>
+                </div>
+            </nav>
+            
+    </header>
 <body>
     <h1>Timetable Generator</h1>
 
@@ -155,140 +161,18 @@
         <button onclick="enableEditing()">Edit Timetables</button>
     </div>
 
-    <script>
-        let teachers = ["Teacher1", "Teacher2", "Teacher3", "Teacher4", "Teacher5"];
-        let subjectsSem1 = [];
-        let labsSem1 = [];
-        let subjectsSem2 = [];
-        let labsSem2 = [];
-        let subjectsSem3 = [];
-        let labsSem3 = [];
-
-        function addSubjects(semester) {
-            let numSubjects = document.getElementById(`num-subjects-sem-${semester}`).value;
-            let subjectInputs = document.getElementById(`subject-inputs-sem-${semester}`);
-            subjectInputs.innerHTML = '';
-
-            for (let i = 0; i < numSubjects; i++) {
-                subjectInputs.innerHTML += `
-                    <div>
-                        <label for="subject-${semester}-${i}">Subject ${i + 1}:</label>
-                        <input type="text" id="subject-${semester}-${i}" placeholder="Subject Name">
-                        <select id="teacher-${semester}-${i}">
-                            ${teachers.map(teacher => `<option value="${teacher}">${teacher}</option>`).join('')}
-                        </select>
-                    </div>
-                `;
-            }
-        }
-
-        function addLabs(semester) {
-            let numLabs = document.getElementById(`num-labs-sem-${semester}`).value;
-            let labInputs = document.getElementById(`lab-inputs-sem-${semester}`);
-            labInputs.innerHTML = '';
-
-            for (let i = 0; i < numLabs; i++) {
-                labInputs.innerHTML += `
-                    <div>
-                        <label for="lab-${semester}-${i}">Lab ${i + 1}:</label>
-                        <input type="text" id="lab-${semester}-${i}" placeholder="Lab Name">
-                        <select id="lab-teacher-${semester}-${i}">
-                            ${teachers.map(teacher => `<option value="${teacher}">${teacher}</option>`).join('')}
-                        </select>
-                    </div>
-                `;
-            }
-        }
-
-        function generateTimetables() {
-            let timetablesContainer = document.getElementById('timetables-container');
-            timetablesContainer.innerHTML = '';
-
-            for (let semester = 1; semester <= 3; semester++) {
-                let numSubjects = document.getElementById(`num-subjects-sem-${semester}`).value;
-                let numLabs = document.getElementById(`num-labs-sem-${semester}`).value;
-
-                let subjects = [];
-                for (let i = 0; i < numSubjects; i++) {
-                    let subject = document.getElementById(`subject-${semester}-${i}`).value;
-                    let teacher = document.getElementById(`teacher-${semester}-${i}`).value;
-                    subjects.push({ subject, teacher });
-                }
-
-                let labs = [];
-                for (let i = 0; i < numLabs; i++) {
-                    let lab = document.getElementById(`lab-${semester}-${i}`).value;
-                    let teacher = document.getElementById(`lab-teacher-${semester}-${i}`).value;
-                    labs.push({ lab, teacher });
-                }
-
-                let timetable = generateTimetable(subjects, labs);
-                let timetableDiv = document.createElement('div');
-                timetableDiv.innerHTML = `<h2>Semester ${semester} Timetable</h2>${timetable}`;
-                timetablesContainer.appendChild(timetableDiv);
-            }
-        }
-
-        function generateTimetable(subjects, labs) {
-            let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-            let timetable = '<table border="1"><tr><th>Time</th>';
-            days.forEach(day => timetable += `<th>${day}</th>`);
-            timetable += '</tr>';
-
-            let times = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'];
-            let teacherSchedule = {};
-
-            times.forEach(time => {
-                timetable += `<tr><td>${time}</td>`;
-                days.forEach(day => {
-                    let slot = findAvailableSlot(subjects, labs, teacherSchedule, time, day);
-                    timetable += `<td>${slot}</td>`;
-                });
-                timetable += '</tr>';
-            });
-
-            timetable += '</table>';
-            return timetable;
-        }
-
-        function findAvailableSlot(subjects, labs, teacherSchedule, time, day) {
-            let availableSubjects = subjects.filter(subject => !teacherSchedule[subject.teacher] || !teacherSchedule[subject.teacher].includes(time));
-            let availableLabs = labs.filter(lab => !teacherSchedule[lab.teacher] || !teacherSchedule[lab.teacher].includes(time));
-
-            if (availableSubjects.length > 0) {
-                let subject = availableSubjects[0];
-                teacherSchedule[subject.teacher] = teacherSchedule[subject.teacher] || [];
-                teacherSchedule[subject.teacher].push(time);
-                return `${subject.subject} (${subject.teacher})`;
-            } else if (availableLabs.length > 0) {
-                let lab = availableLabs[0];
-                teacherSchedule[lab.teacher] = teacherSchedule[lab.teacher] || [];
-                teacherSchedule[lab.teacher].push(time);
-                return `${lab.lab} (${lab.teacher})`;
-            } else {
-                return 'Free';
-            }
-        }
-
-        function printTimetables() {
-            window.print();
-        }
-
-        function saveTimetables() {
-            let timetables = document.getElementById('timetables-container').innerText;
-            let blob = new Blob([timetables], { type: 'text/plain' });
-            let link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'timetables.txt';
-            link.click();
-        }
-
-        function enableEditing() {
-            let timetables = document.getElementById('timetables-container');
-            timetables.contentEditable = true;
-            timetables.style.border = '1px solid #000';
-        }
-    </script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="timee.js"></script>
 </body>
-
+   <!-- Footer -->
+   <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <p>&copy; BLDEACET DEPT OF ISE.</p>
+            </div>
+        </div>
+    </div>
+</footer>
 </html>
+
