@@ -3,221 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to BLDEACET</title>
-    <link rel="icon" type="image/png" href="img/IIITV_Logo_1x1_small.png">
-    <link href='https://fonts.googleapis.com/css?family=Oxygen:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css"/>
-    <link rel="stylesheet" type="text/css" href="n.css">
+    <title>BLDEACET - Department of Information Science and Engineering</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <style>
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #27ae60;
+            --text-color: #333;
+            --light-bg: #f4f4f4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            width: 50px;
+            margin-right: 1rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .logo-text h2 {
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #e0e0e0;
+        }
+
+        /* Hero Section Styles */
+        #hero {
+            padding-top: 80px;
+        }
+
+        .swiper {
+            width: 100%;
+            height: 500px;
+        }
+
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Info Cards Styles */
+        #info-cards {
+            padding: 4rem 0;
+            background-color: var(--light-bg);
+        }
+
+        #info-cards .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .card ul {
+            list-style: none;
+        }
+
+        .card ul li {
+            margin-bottom: 1rem;
+        }
+
+        .event-date {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-right: 1rem;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .event-date span {
+            display: block;
+            font-size: 0.8rem;
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 4rem 0 0;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .footer-section.social a {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .footer-bottom {
+            background-color: #222;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header .container {
+                flex-direction: column;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+            }
+
+            nav ul li {
+                margin-left: 1rem;
+                margin-right: 1rem;
+            }
+
+            .swiper {
+                height: 300px;
+            }
+        }
+    </style>
 </head>
-<body id="home">
-    <div class="wrapper">
-        <!-- Header -->
-        <header id="header">
-            <div class="header-wrapper">
-                <div class="header-container">
-                    <div class="logo-name">
-                        <div class="logo">
-                            <a href="index.html"><img src="https://github.com/prajwaldiggavi/BlDE/blob/image/BLD.png?raw=true
-" alt="logo"></a>
-                        </div>
-                        <div class="name">
-                            <a href="index.html">
-                                <h5>DEPARTMENT OF INFORMATION SCIENCE AND ENGINEERING</h5>
-                                <h5 class="primary-color">BLDEACET</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="header-links">
-                        <a href="https://www.google.com/maps?ll=16.847732,75.718501&z=17&t=m&hl=en&gl=IN&mapclient=embed&cid=6385882878560726955" target="_blank" title="Open in Google Maps">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </a>
-                        <a href="#" data-toggle="popover" title="Phone No." data-content="+91-79-29750281" data-placement="bottom">
-                            <i class="fas fa-phone"></i>
-                        </a>
-                        <a href="https://www.youtube.com/@bldeacetmedia7621" target="_blank" title="YouTube">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        <a href="https://www.instagram.com/bldeacetmedia/" target="_blank" title="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="https://twitter.com/bldeacet" target="_blank" title="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                    </div>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="https://github.com/prajwaldiggavi/BlDE/blob/main/college_logo.png?raw=true" alt="BLDEACET Logo">
+                <div class="logo-text">
+                    <h1>Department of Information Science and Engineering</h1>
+                    <h2>BLDEACET</h2>
                 </div>
             </div>
-            <!-- Navigation -->
-            <nav class="navbar navbar-inverse navbar-custom" role="navigation">
-                <div class="container">
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-nav">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                    </div>
-                    <div class="collapse navbar-collapse" id="main-nav">
-                        <ul class="nav navbar-nav">
-                            <li><a href="next.html">Student Details Entry</a></li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Faculty <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="faculty.html">Staff Details</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="faq.html">Academic Calendar</a></li>
-                                    <li><a href="student_corner.html">Student's Corner</a></li>
-                                    <li><a href="http://moodle.iiitv.ac.in" target="_blank">Moodle</a></li>
-                                    <li><a href="library.html">Library</a></li>
-                                    <li><a href="invited_talks.html">Invited Talks</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="timee.html">AUTOMATIVE_TIMETABLE</a></li>
-                            <li><a href="gallery.html">Photo Gallery</a></li>
-                            <li><a href="attend3.html">Attendance</a></li>
-                            <li><a href="ser.html">E Notes</a></li>
-                        </ul>
-                    </div>
-                </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#programs">Programs</a></li>
+                    <li><a href="#faculty">Faculty</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
             </nav>
-        </header>
+        </div>
+    </header>
 
-        <!-- Carousel -->
-        <div class="carousel-wrapper">
-            <div class="carousel">
-                <div><img src="https://github.com/prajwaldiggavi/BlDE/blob/image/lab2.jpeg?raw=true
-" alt="Faculty"></div>
-                <div><img src="https://raw.githubusercontent.com/prajwaldiggavi/BlDE/refs/heads/image/lab4.webp" alt="Gallery"></div>
-                <div><img src="img/thumbnail/k.jpg" alt="Students"></div>
-                <div><img src="img/gallery/lab4.webp" alt="Talk"></div>
-                <div><img src="https://github.com/prajwaldiggavi/BlDE/blob/image/lab2.jpeg?raw=true
-" alt="Winners"></div>
+    <main>
+        <section id="hero">
+            <div class="swiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide"><img src="https://github.com/prajwaldiggavi/BlDE/blob/main/lab.jpeg?raw=true" alt="Lab"></div>
+                    <div class="swiper-slide"><img src="https://github.com/prajwaldiggavi/BlDE/blob/main/lab3.webp?raw=true" alt="Lab 3"></div>
+                    <div class="swiper-slide"><img src="https://github.com/prajwaldiggavi/BlDE/blob/main/k.jpg?raw=true" alt="Students"></div>
+                    <div class="swiper-slide"><img src="https://github.com/prajwaldiggavi/BlDE/blob/main/lab4.webp?raw=true" alt="Lab 4"></div>
+                    <div class="swiper-slide"><img src="https://github.com/prajwaldiggavi/BlDE/blob/main/lab6.jpg?raw=true" alt="Lab 6"></div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </section>
+
+        <section id="info-cards">
+            <div class="container">
+                <div class="card announcements">
+                    <h2>Announcements</h2>
+                    <ul>
+                        <li>Admissions open for UG and PG Programs. <a href="https://www.bldeacet.ac.in/admission-and-fees-structure.php" target="_blank">Apply Now</a></li>
+                        <li>New research grant awarded to the department</li>
+                        <li>Upcoming webinar on AI and Machine Learning</li>
+                    </ul>
+                </div>
+                <div class="card events">
+                    <h2>Upcoming Events</h2>
+                    <ul>
+                        <li>
+                            <div class="event-date">29<span>OCT</span></div>
+                            <div class="event-details">Fresher's Party</div>
+                        </li>
+                        <li>
+                            <div class="event-date">28<span>OCT</span></div>
+                            <div class="event-details">Project Demo Day</div>
+                        </li>
+                        <li>
+                            <div class="event-date">14<span>NOV</span></div>
+                            <div class="event-details">IEEE Week Celebration</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card news">
+                    <h2>Latest News</h2>
+                    <ul>
+                        <li>5 final year students placed in top MNCs</li>
+                        <li>Department secures 3rd rank in state-level coding competition</li>
+                        <li>New IoT lab inaugurated by industry experts</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section about">
+                    <h3>About Us</h3>
+                    <p>BLDEACET's Department of Information Science and Engineering is committed to excellence in education, research, and innovation.</p>
+                </div>
+                <div class="footer-section links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#programs">Programs</a></li>
+                        <li><a href="#faculty">Faculty</a></li>
+                        <li><a href="#research">Research</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section contact">
+                    <h3>Contact Us</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Ashram Road, Vijayapura-586101</p>
+                    <p><i class="fas fa-phone"></i> 08352-261120</p>
+                    <p><i class="fas fa-envelope"></i> info@bldeacet.ac.in</p>
+                </div>
+                <div class="footer-section social">
+                    <h3>Follow Us</h3>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
             </div>
         </div>
-
-        <!-- Widgets -->
-        <div class="widgets-wrapper">
+        <div class="footer-bottom">
             <div class="container">
-                <div class="alert alert-warning text-center">
-                    Institute invites applications for <a class="alert-link" href="http://pgadmissions.iiitvadodara.ac.in/">UG and PhD programs - Academic Year 2024-25</a>
-                </div>
-                <div class="row">
-                    <!-- Announcements -->
-                    <div class="col-sm-4">
-                        <div class="widget-box">
-                            <h2>Announcements</h2>
-                            <ul id="announcement-list">
-                                <li>For admissions to <b>UG and PG Programs</b><br><a href="https://www.bldeacet.ac.in/admission-and-fees-structure.php" target="_blank">UG-Admission-Portal</a></li>
-                                <li>For queries related to <b>B.Tech. programs</b> contact us at: <a href="mailto:info@bldeacet.ac.in">ADMISSION</a></li>
-                                <li>Government of India Schemes for Students' Welfare <a href="https://www.vidyalakshmi.co.in/Students/indexPopup" target="_blank">www.ssp.in</a> <a href="https://www.scholarships.gov.in/main.do" target="_blank">www.scholarships.gov.in</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- Events -->
-                    <div class="col-sm-4">
-                        <div class="widget-box">
-                            <h2>Events</h2>
-                            <ul id="events-list">
-                                <li>
-                                    <div class="event-date">
-                                        <span class="day">29</span>
-                                        <span class="month">OCT</span>
-                                    </div>
-                                    <div class="event-details">Fresher Party</div>
-                                </li>
-                                <li>
-                                    <div class="event-date">
-                                        <span class="day">28</span>
-                                        <span class="month">OCT</span>
-                                    </div>
-                                    <div class="event-details">Project Demo</div>
-                                </li>
-                                <li>
-                                    <div class="event-date">
-                                        <span class="day">14</span>
-                                        <span class="month">OCT</span>
-                                    </div>
-                                    <div class="event-details">IEE WEEK</div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- News -->
-                    <div class="col-sm-4">
-                        <div class="widget-box">
-                            <h2>News</h2>
-                            <ul id="news-list">
-                                <li>5 students of 7th sem got placed in various MNC</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <p>&copy; 2023 BLDEACET. All rights reserved.</p>
             </div>
         </div>
+    </footer>
 
-        <!-- Footer -->
-        <footer>
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-4">
-                        <img src="img/BLD.png" alt="BLDEACET Logo" class="footer-logo">
-                        <p><strong>Address:</strong><br>
-                        BLDEA's V.P. Dr. P.G. Halakatti College of Engineering and Technology<br>
-                        Ashram Road, Vijayapura-586101</p>
-                        <p>Phone: 08352-261120<br>
-                        Fax: 08352-262945<br>
-                        Email: <a href="mailto:info@bldeacet.ac.in">info@bldeacet.ac.in</a><br>
-                        Web: <a href="https://bldeacet.ac.in">bldeacet.ac.in</a></p>
-                    </div>
-                    <div class="col-sm-4">
-                        <h3>Quick Links</h3>
-                        <ul class="footer-links">
-                            <li><a href="#news">News</a></li>
-                            <li><a href="#announcements">Announcements</a></li>
-                            <li><a href="#events">Events</a></li>
-                            <li><a href="#">Home</a></li>
-                            <li><a href="rti.html">RTI</a></li>
-                            <li><a href="pdf/MOU.pdf">MOU</a></li>
-                            <li><a href="admissions.html">Admission</a></li>
-                            <li><a href="student_corner.html">Student</a></li>
-                            <li><a href="faculty.html">Faculty</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-sm-4">
-                        <h3>Connect With Us</h3>
-                        <div class="footer-social">
-                            <a href="#!" title="Facebook"><i class="fab fa-facebook"></i></a>
-                            <a href="https://github.com/iiitv" title="Github"><i class="fab fa-github"></i></a>
-                            <a href="#!" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                            <a href="#!" title="Twitter"><i class="fab fa-twitter"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('.carousel').slick({
-                dots: true,
-                infinite: true,
-                speed: 500,
-                slidesToShow: 1,
-                adaptiveHeight: true
+        document.addEventListener('DOMContentLoaded', function() {
+            new Swiper('.swiper', {
+                loop: true,
+                pagination: {
+                    el: '.swiper-pagination',
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                autoplay: {
+                    delay: 5000,
+                },
             });
-
-            $('[data-toggle="popover"]').popover();
         });
     </script>
 </body>
