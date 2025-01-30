@@ -1,44 +1,48 @@
 const express = require('express');
 const mysql = require('mysql');
+const cors = require('cors');  // Add this import
 const app = express();
 const port = 8080;
+
+// Enable CORS for your frontend (replace with your actual frontend URL)
+app.use(cors({
+    origin: 'https://bl-de.vercel.app',  // Your frontend URL
+    methods: ['GET', 'POST'],            // Allowed methods
+    allowedHeaders: ['Content-Type']     // Allowed headers
+}));
 
 // Create a function to handle MySQL connection and automatic reconnection
 let dbConnection;
 function handleDisconnect() {
     dbConnection = mysql.createConnection({
-        host: 'sql10.freesqldatabase.com',   // FreeSQL Host
-        user: 'sql10760370',                 // FreeSQL Username
-        password: 'GUeSnpUSjf',              // FreeSQL Password
-        database: 'sql10760370',             // FreeSQL Database Name
-        port: 3306                           // Default MySQL Port
+        host: 'sql10.freesqldatabase.com',
+        user: 'sql10760370',
+        password: 'GUeSnpUSjf',
+        database: 'sql10760370',
+        port: 3306
     });
 
-    // Connect to MySQL
     dbConnection.connect(function(err) {
         if (err) {
             console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000); // Reconnect after 2 seconds if error occurs
+            setTimeout(handleDisconnect, 2000);
         } else {
             console.log('Connected to db as id ' + dbConnection.threadId);
         }
     });
 
-    // Reconnect on connection loss
     dbConnection.on('error', function(err) {
         console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect(); // Reconnect if the connection is lost
+            handleDisconnect();
         } else {
             throw err;
         }
     });
 }
 
-// Initialize database connection
 handleDisconnect();
 
-// Middleware to parse incoming requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -70,11 +74,10 @@ app.get('/students/:semester', (req, res) => {
             console.error('Error fetching students:', error);
             return res.status(500).send('Error fetching students.');
         }
-        res.json(results); // Return student data as JSON
+        res.json(results);
     });
 });
 
-// Start the Express server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
