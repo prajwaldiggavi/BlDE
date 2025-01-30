@@ -8,17 +8,18 @@ const path = require('path'); // For path management
 const ExcelJS = require('exceljs'); // For exporting attendance to Excel
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3001;  // Use Railway's dynamic port or fallback to 3001
 
 app.use(cors());
 app.use(express.json());
 
-// MySQL Database Connection
+// MySQL Database Connection (Using FreeSQL)
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Basu@123', // Your MySQL password
-    database: 'newschema'
+    host: 'sql10.freesqldatabase.com',   // FreeSQL Host
+    user: 'sql10760370',                 // FreeSQL Username
+    password: 'GUeSnpUSjf',              // FreeSQL Password
+    database: 'sql10760370',             // FreeSQL Database Name
+    port: 3306                           // Default MySQL Port
 });
 
 // Connect to the database
@@ -27,7 +28,7 @@ db.connect((err) => {
         console.error('Database connection failed:', err.message);
         return;
     }
-    console.log('Connected to MySQL database');
+    console.log('Connected to FreeSQL Cloud Database');
 });
 
 // Function to generate a modern and visually appealing PDF
@@ -42,11 +43,6 @@ const generateModernPDF = (studentDetails) => {
 
     // Pipe the PDF to a file
     doc.pipe(fs.createWriteStream(filePath));
-
-    // Add College logo (if you have it)
-    // const logoPath = path.join(__dirname, 'college_logo.png'); // Uncomment if you have a logo
-    // doc.image(logoPath, { width: 100, align: 'center' });
-    doc.moveDown(1); // Move down after the logo (if present)
 
     // College and department heading
     doc.fontSize(18).text('BLDEACET Engineering College, Bijapur', { align: 'center', bold: true, color: '#005f73' });
@@ -265,5 +261,5 @@ app.get('/export-attendance', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
