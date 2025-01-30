@@ -7,8 +7,8 @@ const port = 8080;
 // Enable CORS for your frontend (replace with your actual frontend URL)
 app.use(cors({
     origin: 'https://bl-de.vercel.app',  // Your frontend URL
-    methods: ['GET', 'POST'],            // Allowed methods
-    allowedHeaders: ['Content-Type']     // Allowed headers
+    methods: ['GET', 'POST', 'DELETE'], // Allow DELETE method here
+    allowedHeaders: ['Content-Type']    // Allowed headers
 }));
 
 // Create a function to handle MySQL connection and automatic reconnection
