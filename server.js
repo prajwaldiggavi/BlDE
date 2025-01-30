@@ -78,20 +78,16 @@ app.get('/students/:semester', (req, res) => {
     });
 });
 
-// Endpoint to delete a student by studentId
 app.delete('/delete-student/:studentId', (req, res) => {
-    const studentId = req.params.studentId;
+    const { studentId } = req.params;
+    
+    // Logic to delete the student from the database, for example:
     const query = 'DELETE FROM students WHERE studentId = ?';
-
-    dbConnection.query(query, [studentId], (error, results) => {
+    db.query(query, [studentId], (error, results) => {
         if (error) {
-            console.error('Error deleting student:', error);
-            return res.status(500).send('Error deleting student.');
+            return res.status(500).json({ message: 'Error deleting student' });
         }
-        if (results.affectedRows === 0) {
-            return res.status(404).send('Student not found.');
-        }
-        res.send('Student deleted successfully!');
+        res.status(200).json({ message: `Student with ID ${studentId} deleted successfully` });
     });
 });
 
