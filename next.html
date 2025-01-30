@@ -239,8 +239,8 @@
                 </table>
             </div>
         
-            <script>
-                
+            
+    <script>
         const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway app URL
 
         function addStudent() {
@@ -291,11 +291,12 @@
                                         <td>${student.email}</td>
                                         <td>${student.dob}</td>
                                         <td>${student.gender}</td>
+                                        <td><button class="btn btn-danger" onclick="deleteStudent('${student.studentId}')">Delete</button></td>
                                     </tr>
                                 `);
                             });
                         } else {
-                            $('#studentList').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
+                            $('#studentList').append('<tr><td colspan="8">No students found for this semester.</td></tr>');
                         }
                     },
                     error: function(error) {
@@ -304,6 +305,22 @@
                 });
             } else {
                 alert('Please select a semester.');
+            }
+        }
+
+        function deleteStudent(studentId) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                $.ajax({
+                    url: `${serverUrl}/delete-student/${studentId}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        alert(response);
+                        showStudents(); // Refresh the student list
+                    },
+                    error: function(error) {
+                        alert('Error: ' + error.responseText);
+                    }
+                });
             }
         }
     </script>
