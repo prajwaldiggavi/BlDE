@@ -1,50 +1,34 @@
 const express = require('express');
 const mysql = require('mysql');
-const cors = require('cors');  // Add this import
+const cors = require('cors');
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 
-// Enable CORS for your frontend (replace with your actual frontend URL)
+// Enable CORS for your frontend
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',  // Your frontend URL
-    methods: ['GET', 'POST'],            // Allowed methods
-    allowedHeaders: ['Content-Type']     // Allowed headers
+    origin: 'https://bl-de.vercel.app',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
 }));
 
-// Create a function to handle MySQL connection and automatic reconnection
-let dbConnection;
-function handleDisconnect() {
-    dbConnection = mysql.createConnection({
-        host: 'sql10.freesqldatabase.com',
-        user: 'sql10760370',
-        password: 'GUeSnpUSjf',
-        database: 'sql10760370',
-        port: 3306
-    });
+// Create MySQL Connection Pool (Prevents Crashes)
+const dbConnection = mysql.createPool({
+    connectionLimit: 10, // Prevents too many open connections
+    host: 'sql10.freesqldatabase.com',
+    user: 'sql10760370',
+    password: 'GUeSnpUSjf',
+    database: 'sql10760370',
+    port: 3306
+});
 
-    dbConnection.connect(function(err) {
-        if (err) {
-            console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000);
-        } else {
-            console.log('Connected to db as id ' + dbConnection.threadId);
-        }
-    });
-
-    dbConnection.on('error', function(err) {
-        console.error('DB error: ', err);
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
-        } else {
-            throw err;
-        }
-    });
-}
-
-handleDisconnect();
-
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Keep server alive (Prevents Railway from stopping)
+setInterval(() => {
+    console.log("✅ Server is alive");
+}, 30000); // Logs every 30 seconds
 
 // Endpoint to add a student
 app.post('/add-student', (req, res) => {
@@ -54,13 +38,13 @@ app.post('/add-student', (req, res) => {
         const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
         dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
             if (error) {
-                console.error('Error inserting student data:', error);
+                console.error('❌ Error inserting student data:', error);
                 return res.status(500).send('Error adding student.');
             }
-            res.send('Student added successfully!');
+            res.send('✅ Student added successfully!');
         });
     } else {
-        res.status(400).send('Missing required fields.');
+        res.status(400).send('❌ Missing required fields.');
     }
 });
 
@@ -71,13 +55,21 @@ app.get('/students/:semester', (req, res) => {
 
     dbConnection.query(query, [semester], (error, results) => {
         if (error) {
-            console.error('Error fetching students:', error);
+            console.error('❌ Error fetching students:', error);
             return res.status(500).send('Error fetching students.');
         }
         res.json(results);
     });
 });
 
+// Graceful Shutdown (Prevents Railway Auto-Kill)
+process.on('SIGTERM', () => {
+    console.log('🚨 Received SIGTERM, shutting down gracefully...');
+    if (dbConnection) dbConnection.end();
+    process.exit(0);
+});
+
+// Start Server
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`🚀 Server running on port ${port}`);
 });
