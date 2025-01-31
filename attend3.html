@@ -354,190 +354,178 @@
             </div>
             
     
-        <script>
+<script>
     function fetchStudents() {
-    const semester = document.getElementById("classSelector").value;
-    const studentsList = document.getElementById("studentsList");
-    studentsList.innerHTML = ''; // Clear previous list
+        const semester = document.getElementById("classSelector").value;
+        const studentsList = document.getElementById("studentsList");
+        studentsList.innerHTML = ''; // Clear previous list
 
-    if (semester) {
-        console.log(`Selected semester: ${semester}`); // Debug log
+        if (semester) {
+            console.log(`Selected semester: ${semester}`); // Debug log
 
-        fetch(`http://localhost:3001/students/semester/${semester}`) // Corrected URL
+            fetch(`https://blde-production.up.railway.app/students/semester/${semester}`) // Updated URL
+                .then(response => {
+                    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    const { students } = data; // Ensure response structure matches
+                    students.forEach(student => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            ${student.studentName} (ID: ${student.studentId})
+                            <div class="student-actions">
+                                <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
+                                <button class="absent-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, false)">Absent</button>
+                            </div>
+                        `;
+                        studentsList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error fetching students:', error));
+        } else {
+            console.error("Semester not selected.");
+        }
+    }
+
+    function fetchAttendance() {
+        const studentId = document.getElementById("studentIdInput").value;
+        const subjectName = document.getElementById("subjectNameRetrieve").value;
+
+        if (!studentId || !subjectName) {
+            alert("Please enter both Student ID and Subject Name.");
+            return;
+        }
+
+        // Fetch attendance data from the backend
+        fetch(`https://blde-production.up.railway.app/attendance/${studentId}/${subjectName}`) // Updated URL
             .then(response => {
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                if (!response.ok) throw new Error('Attendance data not found');
                 return response.json();
             })
             .then(data => {
-                const { students } = data; // Ensure response structure matches
-                students.forEach(student => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        ${student.studentName} (ID: ${student.studentId})
-                        <div class="student-actions">
-                            <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
-                            <button class="absent-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, false)">Absent</button>
-                        </div>
-                    `;
-                    studentsList.appendChild(li);
-                });
+                const presentAttendance = data.attendance.filter(record => record.status === 'Present');
+                const classesAttended = presentAttendance.length;
+
+                // Format dates to only show YYYY-MM-DD
+                const dates = presentAttendance.map(record => {
+                    const formattedDate = new Date(record.date).toISOString().split('T')[0]; // Only date part
+                    return formattedDate;
+                }).join(", ");
+
+                document.getElementById("attendanceDetailsDisplay").innerHTML = `
+                    Student ID: ${studentId}<br>
+                    Subject: ${subjectName}<br>
+                    Classes Attended: ${classesAttended}<br>
+                    Dates: ${dates || 'No present attendance recorded'}
+                `;
+                document.getElementById("attendanceDetail").style.display = "block";
             })
-            .catch(error => console.error('Error fetching students:', error));
-    } else {
-        console.error("Semester not selected.");
-    }
-}
-
-function fetchAttendance() {
-    const studentId = document.getElementById("studentIdInput").value;
-    const subjectName = document.getElementById("subjectNameRetrieve").value;
-
-    if (!studentId || !subjectName) {
-        alert("Please enter both Student ID and Subject Name.");
-        return;
+            .catch(error => {
+                console.error("Error fetching attendance:", error);
+                alert("Error fetching attendance. Please try again.");
+            });
     }
 
-    // Fetch attendance data from the backend
-    fetch(`http://localhost:3001/attendance/${studentId}/${subjectName}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Attendance data not found');
-            return response.json();
-        })
-        .then(data => {
-            const presentAttendance = data.attendance.filter(record => record.status === 'Present');
-            const classesAttended = presentAttendance.length;
+    function displayAttendanceStats() {
+        // Get the total count of students marked as present
+        const presentCount = Array.from(document.querySelectorAll('.present-btn')).length;
 
-            // Format dates to only show YYYY-MM-DD
-            const dates = presentAttendance.map(record => {
-                const formattedDate = new Date(record.date).toISOString().split('T')[0]; // Only date part
-                return formattedDate;
-            }).join(", ");
+        // Convert the current date to a local date
+        const today = new Date();
+        const localDate = today.toLocaleDateString('en-US', { timeZone: 'America/New_York' }); // Adjust to your timezone
 
-            document.getElementById("attendanceDetailsDisplay").innerHTML = `
-                Student ID: ${studentId}<br>
-                Subject: ${subjectName}<br>
-                Classes Attended: ${classesAttended}<br>
-                Dates: ${dates || 'No present attendance recorded'}
-            `;
-            document.getElementById("attendanceDetail").style.display = "block";
-        })
-        .catch(error => {
-            console.error("Error fetching attendance:", error);
-            alert("Error fetching attendance. Please try again.");
-        });
-}
-
-
-function displayAttendanceStats() {
-    // Get the total count of students marked as present
-    const presentCount = Array.from(document.querySelectorAll('.present-btn')).length;
-
-    // Convert the current date to a local date
-    const today = new Date();
-    const localDate = today.toLocaleDateString('en-US', { timeZone: 'America/New_York' }); // Adjust to your timezone
-
-    // Display the present student count and date
-    document.getElementById("presentCountDisplay").textContent = `Present Students: ${presentCount}`;
-    document.getElementById("dateDisplay").textContent = `Date: ${localDate}`;
-}
-
-
-
-
-
-
-    
-            function toggleAttendance(button, isPresent) {
-    const parentDiv = button.parentElement;
-    const presentButton = parentDiv.querySelector('.present-btn');
-    const absentButton = parentDiv.querySelector('.absent-btn');
-    const studentName = parentDiv.parentElement.textContent.split(' (ID:')[0]; // Extract student name
-
-    if (isPresent) {
-        presentButton.style.display = 'none';
-        absentButton.style.display = 'inline-block';
-        speakAttendance(`${studentName} is Absent`);
-    } else {
-        presentButton.style.display = 'inline-block';
-        absentButton.style.display = 'none';
-        speakAttendance(`${studentName} is Present`);
+        // Display the present student count and date
+        document.getElementById("presentCountDisplay").textContent = `Present Students: ${presentCount}`;
+        document.getElementById("dateDisplay").textContent = `Date: ${localDate}`;
     }
 
-    parentDiv.setAttribute('data-status', isPresent ? 'Absent' : 'Present');
-}
-function speakAttendance(text) {
-    if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US'; // Language can be adjusted
-        window.speechSynthesis.speak(utterance);
-    } else {
-        console.warn('Speech synthesis not supported in this browser.');
-    }
-}
+    function toggleAttendance(button, isPresent) {
+        const parentDiv = button.parentElement;
+        const presentButton = parentDiv.querySelector('.present-btn');
+        const absentButton = parentDiv.querySelector('.absent-btn');
+        const studentName = parentDiv.parentElement.textContent.split(' (ID:')[0]; // Extract student name
 
+        if (isPresent) {
+            presentButton.style.display = 'none';
+            absentButton.style.display = 'inline-block';
+            speakAttendance(`${studentName} is Absent`);
+        } else {
+            presentButton.style.display = 'inline-block';
+            absentButton.style.display = 'none';
+            speakAttendance(`${studentName} is Present`);
+        }
 
-
- 
-
-async function submitAttendance() {
-    const subjectName = document.getElementById("subjectName").value;
-    if (!subjectName) {
-        alert("Please enter a subject name.");
-        return;
+        parentDiv.setAttribute('data-status', isPresent ? 'Absent' : 'Present');
     }
 
-    const dateInput = document.getElementById("attendanceDateInput").value;
-    if (!dateInput) {
-        alert("Please select a date.");
-        return;
+    function speakAttendance(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // Language can be adjusted
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.warn('Speech synthesis not supported in this browser.');
+        }
     }
 
-    const studentsList = document.getElementById("studentsList").getElementsByTagName("li");
-    let presentCount = 0, absentCount = 0;
+    async function submitAttendance() {
+        const subjectName = document.getElementById("subjectName").value;
+        if (!subjectName) {
+            alert("Please enter a subject name.");
+            return;
+        }
 
-    const attendance = Array.from(studentsList).map(studentItem => {
-        const rollNumber = studentItem.querySelector(".present-btn").getAttribute("data-roll");
-        const status = studentItem.querySelector(".absent-btn").style.display === 'inline-block' ? "Absent" : "Present";
+        const dateInput = document.getElementById("attendanceDateInput").value;
+        if (!dateInput) {
+            alert("Please select a date.");
+            return;
+        }
 
-        if (status === "Present") presentCount++;
-        else absentCount++;
+        const studentsList = document.getElementById("studentsList").getElementsByTagName("li");
+        let presentCount = 0, absentCount = 0;
 
-        return { roll_number: rollNumber, status };
-    });
+        const attendance = Array.from(studentsList).map(studentItem => {
+            const rollNumber = studentItem.querySelector(".present-btn").getAttribute("data-roll");
+            const status = studentItem.querySelector(".absent-btn").style.display === 'inline-block' ? "Absent" : "Present";
 
-    try {
-        const response = await fetch("http://localhost:3001/attendance", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                date: dateInput, 
-                subjectName, 
-                attendance 
-            }),
+            if (status === "Present") presentCount++;
+            else absentCount++;
+
+            return { roll_number: rollNumber, status };
         });
 
-        if (!response.ok) throw new Error('Error saving attendance');
+        try {
+            const response = await fetch("https://blde-production.up.railway.app/attendance", { // Updated URL
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    date: dateInput, 
+                    subjectName, 
+                    attendance 
+                }),
+            });
 
-        // Update UI after successful submission
-        document.getElementById("attendanceDateDisplay").textContent = dateInput;
-        document.getElementById("attendanceTimeDisplay").textContent = new Date().toLocaleTimeString();
-        document.getElementById("resultSection").style.display = "block";
-        document.getElementById("statsSection").style.display = "block";
-        document.getElementById("totalStudentsDisplay").textContent = attendance.length;
-        document.getElementById("presentCountDisplay").textContent = presentCount;
-        document.getElementById("absentCountDisplay").textContent = absentCount;
-    } catch (error) {
-        console.error('Error submitting attendance:', error);
-        alert("Failed to submit attendance. Please try again.");
+            if (!response.ok) throw new Error('Error saving attendance');
+
+            // Update UI after successful submission
+            document.getElementById("attendanceDateDisplay").textContent = dateInput;
+            document.getElementById("attendanceTimeDisplay").textContent = new Date().toLocaleTimeString();
+            document.getElementById("resultSection").style.display = "block";
+            document.getElementById("statsSection").style.display = "block";
+            document.getElementById("totalStudentsDisplay").textContent = attendance.length;
+            document.getElementById("presentCountDisplay").textContent = presentCount;
+            document.getElementById("absentCountDisplay").textContent = absentCount;
+        } catch (error) {
+            console.error('Error submitting attendance:', error);
+            alert("Failed to submit attendance. Please try again.");
+        }
     }
-}
 
-    
-           
-            function exportAttendance() {
-                window.open('http://localhost:3001/export-attendance', '_blank');
-            }
-        </script>
+    function exportAttendance() {
+        window.open('https://blde-production.up.railway.app/export-attendance', '_blank'); // Updated URL
+    }
+</script>
     </body>
     <footer>
         <div class="container">
