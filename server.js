@@ -4,11 +4,11 @@ const cors = require('cors');
 const app = express();
 const port = 8080;
 
-// Enable CORS for your frontend (replace with your actual frontend URL)
+// Enable CORS for your frontend
 app.use(cors({
     origin: 'https://bl-de.vercel.app',  // Your frontend URL
-    methods: ['GET', 'POST', 'DELETE'], // Allow DELETE method here
-    allowedHeaders: ['Content-Type']    // Allowed headers
+    methods: ['GET', 'POST', 'DELETE'],  // Allow DELETE method
+    allowedHeaders: ['Content-Type']
 }));
 
 // Create a function to handle MySQL connection and automatic reconnection
@@ -24,16 +24,17 @@ function handleDisconnect() {
 
     dbConnection.connect(function(err) {
         if (err) {
-            console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000);
+            console.error('Error connecting to DB: ' + err.stack);
+            setTimeout(handleDisconnect, 2000); // Retry connection after 2 seconds
         } else {
-            console.log('Connected to db as id ' + dbConnection.threadId);
+            console.log('Connected to DB as ID ' + dbConnection.threadId);
         }
     });
 
     dbConnection.on('error', function(err) {
-        console.error('DB error: ', err);
+        console.error('DB Error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            console.log('Reconnecting to database...');
             handleDisconnect();
         } else {
             throw err;
@@ -78,19 +79,24 @@ app.get('/students/:semester', (req, res) => {
     });
 });
 
+// Endpoint to delete a student
 app.delete('/delete-student/:studentId', (req, res) => {
     const { studentId } = req.params;
-    
-    // Logic to delete the student from the database, for example:
+
     const query = 'DELETE FROM students WHERE studentId = ?';
-    db.query(query, [studentId], (error, results) => {
+    dbConnection.query(query, [studentId], (error, results) => {
         if (error) {
+            console.error('Error deleting student:', error);
             return res.status(500).json({ message: 'Error deleting student' });
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: `Student with ID ${studentId} not found` });
         }
         res.status(200).json({ message: `Student with ID ${studentId} deleted successfully` });
     });
 });
 
+// Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
