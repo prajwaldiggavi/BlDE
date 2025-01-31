@@ -1,65 +1,83 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-
+const mysql = require('mysql');
+const cors = require('cors');  // Add this import
 const app = express();
 const port = 8080;
 
-// Enable CORS (Allow frontend access)
+// Enable CORS for your frontend (replace with your actual frontend URL)
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',  // Update with your frontend URL
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
+    origin: 'https://bl-de.vercel.app',  // Your frontend URL
+    methods: ['GET', 'POST'],            // Allowed methods
+    allowedHeaders: ['Content-Type']     // Allowed headers
 }));
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => console.error('❌ MongoDB Connection Error:', err));
+// Create a function to handle MySQL connection and automatic reconnection
+let dbConnection;
+function handleDisconnect() {
+    dbConnection = mysql.createConnection({
+        host: 'sql10.freesqldatabase.com',
+        user: 'sql10760370',
+        password: 'GUeSnpUSjf',
+        database: 'sql10760370',
+        port: 3306
+    });
 
-// Define Schema & Model
-const studentSchema = new mongoose.Schema({
-    studentId: String,
-    studentName: String,
-    semester: Number,
-    phone_number: String,
-    email: String,
-    dob: String,
-    gender: String
-});
+    dbConnection.connect(function(err) {
+        if (err) {
+            console.error('Error connecting to db: ' + err.stack);
+            setTimeout(handleDisconnect, 2000);
+        } else {
+            console.log('Connected to db as id ' + dbConnection.threadId);
+        }
+    });
 
-const Student = mongoose.model('Student', studentSchema);
+    dbConnection.on('error', function(err) {
+        console.error('DB error: ', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
 
-// Middleware
+handleDisconnect();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Add Student API
-app.post('/add-student', async (req, res) => {
-    try {
-        const newStudent = new Student(req.body);
-        await newStudent.save();
-        res.send('✅ Student added successfully!');
-    } catch (err) {
-        res.status(500).send('❌ Error adding student.');
+// Endpoint to add a student
+app.post('/add-student', (req, res) => {
+    const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
+
+    if (studentId && studentName && semester && phone_number && email && dob && gender) {
+        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
+            if (error) {
+                console.error('Error inserting student data:', error);
+                return res.status(500).send('Error adding student.');
+            }
+            res.send('Student added successfully!');
+        });
+    } else {
+        res.status(400).send('Missing required fields.');
     }
 });
 
-// ✅ Get Students by Semester API
-app.get('/students/:semester', async (req, res) => {
-    try {
-        const students = await Student.find({ semester: req.params.semester });
-        res.json(students);
-    } catch (err) {
-        res.status(500).send('❌ Error fetching students.');
-    }
+// Endpoint to get students by semester
+app.get('/students/:semester', (req, res) => {
+    const semester = req.params.semester;
+    const query = 'SELECT * FROM students WHERE semester = ?';
+
+    dbConnection.query(query, [semester], (error, results) => {
+        if (error) {
+            console.error('Error fetching students:', error);
+            return res.status(500).send('Error fetching students.');
+        }
+        res.json(results);
+    });
 });
 
-// Start Server
 app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
