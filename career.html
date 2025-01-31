@@ -1,115 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+const express = require('express');
+const mysql = require('mysql');
+const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 8080;
+
+// Enable CORS for your frontend
+app.use(cors({
+    origin: 'https://bl-de.vercel.app',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
+
+// Create MySQL Connection Pool (Prevents Crashes)
+const dbConnection = mysql.createPool({
+    connectionLimit: 10, // Prevents too many open connections
+    host: 'sql10.freesqldatabase.com',
+    user: 'sql10760370',
+    password: 'GUeSnpUSjf',
+    database: 'sql10760370',
+    port: 3306
+});
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Keep server alive (Prevents Railway from stopping)
+setInterval(() => {
+    console.log("✅ Server is alive");
+}, 30000); // Logs every 30 seconds
+
+// Endpoint to add a student
+app.post('/add-student', (req, res) => {
+    const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
+
+    if (studentId && studentName && semester && phone_number && email && dob && gender) {
+        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
+            if (error) {
+                console.error('❌ Error inserting student data:', error);
+                return res.status(500).send('Error adding student.');
+            }
+            res.send('✅ Student added successfully!');
+        });
+    } else {
+        res.status(400).send('❌ Missing required fields.');
+    }
+});
+
+// Endpoint to get students by semester
+app.get('/students/:semester', (req, res) => {
+    const semester = req.params.semester;
+    const query = 'SELECT * FROM students WHERE semester = ?';
+
+    dbConnection.query(query, [semester], (error, results) => {
+        if (error) {
+            console.error('❌ Error fetching students:', error);
+            return res.status(500).send('Error fetching students.');
         }
-        input, button {
-            margin: 5px;
-            padding: 8px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid black;
-            padding: 10px;
-            text-align: left;
-        }
-    </style>
-</head>
-<body>
+        res.json(results);
+    });
+});
 
-    <h2>Add Student</h2>
-    <input type="text" id="studentId" placeholder="Student ID">
-    <input type="text" id="studentName" placeholder="Student Name">
-    <input type="number" id="semester" placeholder="Semester">
-    <input type="text" id="phone_number" placeholder="Phone Number">
-    <input type="email" id="email" placeholder="Email">
-    <input type="date" id="dob" placeholder="Date of Birth">
-    <select id="gender">
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-    </select>
-    <button onclick="addStudent()">Add Student</button>
+// Graceful Shutdown (Prevents Railway Auto-Kill)
+process.on('SIGTERM', () => {
+    console.log('🚨 Received SIGTERM, shutting down gracefully...');
+    if (dbConnection) dbConnection.end();
+    process.exit(0);
+});
 
-    <h2>Search Students by Semester</h2>
-    <input type="number" id="searchSemester" placeholder="Enter Semester">
-    <button onclick="fetchStudents()">Get Students</button>
-
-    <table id="studentsTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Semester</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>DOB</th>
-                <th>Gender</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <script>
-        const backendURL = "https://blde-production.up.railway.app";
-
-        // Function to add a student
-        function addStudent() {
-            const studentData = {
-                studentId: document.getElementById("studentId").value,
-                studentName: document.getElementById("studentName").value,
-                semester: document.getElementById("semester").value,
-                phone_number: document.getElementById("phone_number").value,
-                email: document.getElementById("email").value,
-                dob: document.getElementById("dob").value,
-                gender: document.getElementById("gender").value
-            };
-
-            fetch(`${backendURL}/add-student`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(studentData)
-            })
-            .then(response => response.text())
-            .then(data => alert(data))
-            .catch(error => console.error("Error:", error));
-        }
-
-        // Function to fetch students by semester
-        function fetchStudents() {
-            const semester = document.getElementById("searchSemester").value;
-            fetch(`${backendURL}/students/${semester}`)
-            .then(response => response.json())
-            .then(data => {
-                const tableBody = document.querySelector("#studentsTable tbody");
-                tableBody.innerHTML = ""; // Clear previous data
-
-                data.forEach(student => {
-                    const row = `<tr>
-                        <td>${student.studentId}</td>
-                        <td>${student.studentName}</td>
-                        <td>${student.semester}</td>
-                        <td>${student.phone_number}</td>
-                        <td>${student.email}</td>
-                        <td>${student.dob}</td>
-                        <td>${student.gender}</td>
-                    </tr>`;
-                    tableBody.innerHTML += row;
-                });
-            })
-            .catch(error => console.error("Error:", error));
-        }
-    </script>
-
-</body>
-</html>
+// Start Server
+app.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+});
