@@ -2,108 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IIIT-V | Faculty</title>
-    <link rel="icon" type="image/png" href="img/IIITV_Logo_1x1_small.png">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
     <style>
-        .faculty-photo {
-            max-width: 100%;
-            max-height: 150px;
-            height: auto;
-            border-radius: 50%;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, button {
+            margin: 5px;
+            padding: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <h2>Student Details Entry</h2>
-        <form id="studentForm">
-            <div class="form-group">
-                <label for="studentId">Student USN:</label>
-                <input type="text" class="form-control" id="studentId" required>
-            </div>
-            <div class="form-group">
-                <label for="studentName">Student Name:</label>
-                <input type="text" class="form-control" id="studentName" required>
-            </div>
-            <div class="form-group">
-                <label for="semester">Select Semester:</label>
-                <select class="form-control" id="semester" required>
-                    <option value="">--Select Semester--</option>
-                    <option value="1">Semester 1</option>
-                    <option value="2">Semester 2</option>
-                    <option value="3">Semester 3</option>
-                    <option value="4">Semester 4</option>
-                    <option value="5">Semester 5</option>
-                    <option value="6">Semester 6</option>
-                    <option value="7">Semester 7</option>
-                    <option value="8">Semester 8</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="phone_number">Phone Number:</label>
-                <input type="text" class="form-control" id="phone_number" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" class="form-control" id="email" required>
-            </div>
-            <div class="form-group">
-                <label for="dob">Date of Birth:</label>
-                <input type="date" class="form-control" id="dob" required>
-            </div>
-            <div class="form-group">
-                <label for="gender">Gender:</label>
-                <select class="form-control" id="gender" required>
-                    <option value="">--Select Gender--</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="addStudent()">Add Student</button>
-        </form>
 
-        <hr>
+    <h2>Add Student</h2>
+    <input type="text" id="studentId" placeholder="Student ID">
+    <input type="text" id="studentName" placeholder="Student Name">
+    <input type="number" id="semester" placeholder="Semester">
+    <input type="text" id="phone_number" placeholder="Phone Number">
+    <input type="email" id="email" placeholder="Email">
+    <input type="date" id="dob" placeholder="Date of Birth">
+    <select id="gender">
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+    <button onclick="addStudent()">Add Student</button>
 
-        <h2>Show Students</h2>
-        <div class="form-group">
-            <label for="showSemester">Select Semester:</label>
-            <select class="form-control" id="showSemester" required>
-                <option value="">--Select Semester--</option>
-                <option value="1">Semester 1</option>
-                <option value="2">Semester 2</option>
-                <option value="3">Semester 3</option>
-                <option value="4">Semester 4</option>
-                <option value="5">Semester 5</option>
-                <option value="6">Semester 6</option>
-                <option value="7">Semester 7</option>
-                <option value="8">Semester 8</option>
-            </select>
-            <button type="button" class="btn btn-success" onclick="showStudents()">Show Students</button>
-        </div>
+    <h2>Search Students by Semester</h2>
+    <input type="number" id="searchSemester" placeholder="Enter Semester">
+    <button onclick="fetchStudents()">Get Students</button>
 
-        <table class="table table-striped" id="studentTable">
-            <thead>
-                <tr>
-                    <th>USN</th>
-                    <th>Name</th>
-                    <th>Semester</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>DOB</th>
-                    <th>Gender</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="studentList"></tbody>
-        </table>
-    </div>
+    <table id="studentsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Semester</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>DOB</th>
+                <th>Gender</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
     <script>
-        const serverUrl = "https://blde-production.up.railway.app";
+        const backendURL = "https://blde-production.up.railway.app";
 
+        // Function to add a student
         function addStudent() {
             const studentData = {
                 studentId: document.getElementById("studentId").value,
@@ -115,14 +75,41 @@
                 gender: document.getElementById("gender").value
             };
 
-            fetch(`${serverUrl}/add-student`, {
+            fetch(`${backendURL}/add-student`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(studentData)
-            }).then(response => response.json())
-              .then(data => alert(data.message))
-              .catch(err => alert("Error: " + err));
+            })
+            .then(response => response.text())
+            .then(data => alert(data))
+            .catch(error => console.error("Error:", error));
+        }
+
+        // Function to fetch students by semester
+        function fetchStudents() {
+            const semester = document.getElementById("searchSemester").value;
+            fetch(`${backendURL}/students/${semester}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector("#studentsTable tbody");
+                tableBody.innerHTML = ""; // Clear previous data
+
+                data.forEach(student => {
+                    const row = `<tr>
+                        <td>${student.studentId}</td>
+                        <td>${student.studentName}</td>
+                        <td>${student.semester}</td>
+                        <td>${student.phone_number}</td>
+                        <td>${student.email}</td>
+                        <td>${student.dob}</td>
+                        <td>${student.gender}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            })
+            .catch(error => console.error("Error:", error));
         }
     </script>
+
 </body>
 </html>
