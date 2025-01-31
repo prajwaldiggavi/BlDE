@@ -1,265 +1,197 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const nodemailer = require('nodemailer'); // For sending email
-const PDFDocument = require('pdfkit'); // For creating PDF
-const fs = require('fs'); // To save PDF locally
-const path = require('path'); // For path management
-const ExcelJS = require('exceljs'); // For exporting attendance to Excel
+const nodemailer = require('nodemailer');
 
 const app = express();
-const PORT = process.env.PORT || 3001;  // Use Railway's dynamic port or fallback to 3001
+const PORT = process.env.PORT || 3001; // Supports Railway Deployment
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// MySQL Database Connection (Using FreeSQL)
+// MySQL Database Connection (FreeSQL Cloud)
 const db = mysql.createConnection({
-    host: 'sql10.freesqldatabase.com',   // FreeSQL Host
-    user: 'sql10760370',                 // FreeSQL Username
-    password: 'GUeSnpUSjf',              // FreeSQL Password
-    database: 'sql10760370',             // FreeSQL Database Name
-    port: 3306                           // Default MySQL Port
+    host: 'sql10.freesqldatabase.com',  // FreeSQL host
+    user: 'sql10760370',                // FreeSQL username
+    password: 'GUeSnpUSjf',              // FreeSQL password
+    database: 'sql10760370',             // FreeSQL database name
+    port: 3306                           // Default MySQL port
 });
 
-// Connect to the database
+// Connect to Database
 db.connect((err) => {
     if (err) {
-        console.error('Database connection failed:', err.message);
+        console.error('❌ Database connection failed:', err);
         return;
     }
-    console.log('Connected to FreeSQL Cloud Database');
+    console.log('✅ Connected to FreeSQL Cloud Database');
 });
 
-// Function to generate a modern and visually appealing PDF
-const generateModernPDF = (studentDetails) => {
-    const doc = new PDFDocument({
-        size: 'A4',
-        layout: 'portrait'
+// Email Configuration (Hardcoded Credentials)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'diggaviprajwal55@gmail.com',
+        pass: 'bgnm kbga xkew pgpb' // Use your actual Google App Password
+    }
+});
+
+// Helper Function: Execute MySQL Queries
+const executeQuery = (query, params) => {
+    return new Promise((resolve, reject) => {
+        db.query(query, params, (err, results) => {
+            if (err) reject(err);
+            else resolve(results);
+        });
     });
-
-    // Path where the PDF will be saved
-    const filePath = path.join(__dirname, 'student_admission.pdf');
-
-    // Pipe the PDF to a file
-    doc.pipe(fs.createWriteStream(filePath));
-
-    // College and department heading
-    doc.fontSize(18).text('BLDEACET Engineering College, Bijapur', { align: 'center', bold: true, color: '#005f73' });
-    doc.fontSize(14).text('Department of Information Science and Engineering', { align: 'center', italics: true, color: '#007f7f' });
-    doc.moveDown(2); // Space between heading and content
-
-    // Admission Confirmation Header
-    doc.fontSize(16).text('Student Admission Confirmation', { align: 'center', underline: true });
-    doc.moveDown(1);
-
-    // Student details section heading
-    doc.fontSize(12).text('Student Details:', { align: 'left', bold: true, color: '#004d40' });
-    doc.moveDown(1);
-    
-    // Table layout for student details
-    const tableTop = doc.y;
-    
-    // Table Header
-    doc.fontSize(10).fillColor('#ffffff').rect(50, tableTop, 500, 30).fill('#0288d1');
-    doc.fillColor('#ffffff').text('Field', 60, tableTop + 10, { width: 150, align: 'center', bold: true });
-    doc.text('Details', 250, tableTop + 10, { width: 300, align: 'center', bold: true });
-    doc.moveDown(2); // Move down to start content
-
-    // Table Rows
-    const rowHeight = 30;
-    const data = [
-        ['Student ID', studentDetails.studentId],
-        ['Name', studentDetails.studentName],
-        ['Semester', studentDetails.semester],
-        ['Phone Number', studentDetails.phone_number],
-        ['Email', studentDetails.email],
-        ['Date of Birth', studentDetails.dob],
-        ['Gender', studentDetails.gender]
-    ];
-
-    data.forEach((row, index) => {
-        const yPosition = tableTop + 30 + (index * rowHeight);
-        doc.fontSize(10)
-            .fillColor('#0288d1')
-            .text(row[0], 60, yPosition, { width: 150, align: 'center' })
-            .text(row[1], 250, yPosition, { width: 300, align: 'center' });
-    });
-
-    // Adding a nice border and line break after the table
-    doc.moveDown(1);
-    doc.lineWidth(0.5).strokeColor('black').moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-
-    doc.moveDown(1);
-    doc.text('We are excited to have you join us at DEPT OF ISE!');
-    doc.text('Best regards,');
-    doc.text('HOD DEPT OFF ISE');
-    doc.text('DR.PRAKSH UNKI');
-    doc.end(); // End the document
-
-    return filePath; // Returning the file path
 };
 
-// Function to send an email with the PDF attached
-const sendEmailWithPDF = (to, subject, text, filePath) => {
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'diggaviprajwal55@gmail.com',  // Sender email address
-            pass: 'bgnm kbga xkew pgpb'          // Sender email password (App-specific password)
-        }
-    });
+// Route to save or update attendance and send email notifications
+app.post('/attendance', async (req, res) => {
+    const { date, subjectName, attendance } = req.body;
 
-    const mailOptions = {
-        from: 'diggaviprajwal55@gmail.com',  // Sender email address
-        to: to,                             // Recipient email address
-        subject: subject,                   // Subject of the email
-        text: text,                          // Email body
-        attachments: [
-            {
-                filename: 'student_admission.pdf',
-                path: filePath // Path of the generated PDF file
+    if (!date || !subjectName || !attendance || attendance.length === 0) {
+        return res.status(400).json({ message: "Invalid or incomplete data provided." });
+    }
+
+    try {
+        const rollNumbers = attendance.map(record => record.roll_number);
+
+        // Save or update attendance records
+        const attendancePromises = attendance.map(async (record) => {
+            const { roll_number, status } = record;
+
+            const existingRecord = await executeQuery(
+                'SELECT id FROM attendance WHERE date = ? AND roll_number = ?',
+                [date, roll_number]
+            );
+
+            if (existingRecord.length > 0) {
+                return executeQuery(
+                    'UPDATE attendance SET status = ?, subjectName = ? WHERE date = ? AND roll_number = ?',
+                    [status, subjectName, date, roll_number]
+                );
+            } else {
+                return executeQuery(
+                    'INSERT INTO attendance (date, roll_number, status, subjectName) VALUES (?, ?, ?, ?)',
+                    [date, roll_number, status, subjectName]
+                );
             }
-        ]
-    };
-
-    transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-            console.error('Error sending email:', err);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-    });
-};
-
-// Route to add a new student and send a confirmation email with a PDF
-app.post('/add-student', (req, res) => {
-    const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
-
-    // Check if all required fields are provided
-    if (!studentId || !studentName || !semester || !phone_number || !email || !dob || !gender) {
-        return res.status(400).send('All student details are required');
-    }
-
-    // Insert student data into the database
-    const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (err, result) => {
-        if (err) {
-            console.error('Error adding student:', err.message);
-            return res.status(500).send('Error adding student');
-        }
-
-        // Create PDF for the student details
-        const studentDetails = { studentId, studentName, semester, phone_number, email, dob, gender };
-        const pdfPath = generateModernPDF(studentDetails);
-
-        // Email content
-        const emailSubject = 'Admission Confirmation at BLDEACET Engineering College, Bijapur';
-        const emailText = `Dear ${studentName},
-
-        Congratulations! You have successfully completed the admission process at **BLDEACET Engineering College, Bijapur**.
-
-        Please find attached your admission details in a PDF.
-
-        Best regards,
-        **BLDEACET Engineering College, Bijapur**
-        `;
-
-        // Send email with the PDF attached
-        sendEmailWithPDF(email, emailSubject, emailText, pdfPath);
-
-        res.send('Student added successfully and confirmation email with PDF sent!');
-    });
-});
-
-// Route to fetch students by semester
-app.get('/students/:semester', (req, res) => {
-    const semester = req.params.semester;
-    const query = 'SELECT studentId, studentName, semester, phone_number, email, dob, gender FROM students WHERE semester = ?';
-    db.query(query, [semester], (err, results) => {
-        if (err) {
-            console.error('Error fetching students:', err.message);
-            return res.status(500).send('Error fetching students');
-        }
-        res.json(results);
-    });
-});
-
-// Route to delete a student by ID
-app.delete('/delete-student/:studentId', (req, res) => {
-    const studentId = req.params.studentId;
-    const query = 'DELETE FROM students WHERE studentId = ?';
-    db.query(query, [studentId], (err, result) => {
-        if (err) {
-            console.error('Error deleting student:', err.message);
-            return res.status(500).send('Error deleting student');
-        }
-        if (result.affectedRows > 0) {
-            res.send('Student deleted successfully');
-        } else {
-            res.status(404).send('Student not found');
-        }
-    });
-});
-
-// Route to save attendance, with update on duplicate entries
-app.post('/attendance', (req, res) => {
-    const { date, attendance } = req.body;
-    if (!date || !attendance || !Array.isArray(attendance)) {
-        return res.status(400).send('Date and attendance details are required');
-    }
-
-    const query = `
-        INSERT INTO attendance (date, roll_number, status)
-        VALUES ? ON DUPLICATE KEY UPDATE status = VALUES(status)
-    `;
-    const attendanceData = attendance.map(record => [date, record.roll_number, record.status]);
-
-    db.query(query, [attendanceData], (err, results) => {
-        if (err) {
-            console.error('Error saving attendance:', err.message);
-            return res.status(500).send('Error saving attendance');
-        }
-        res.json({ message: 'Attendance saved successfully' });
-    });
-});
-
-// Route to export attendance to Excel
-app.get('/export-attendance', (req, res) => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Attendance');
-
-    worksheet.columns = [
-        { header: 'Date', key: 'date', width: 15 },
-        { header: 'Roll Number', key: 'roll_number', width: 10 },
-        { header: 'Status', key: 'status', width: 15 }
-    ];
-
-    // Fetch attendance from the database
-    const query = 'SELECT * FROM attendance';
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching attendance:', err.message);
-            return res.status(500).send('Error fetching attendance');
-        }
-
-        results.forEach(record => {
-            worksheet.addRow({
-                date: record.date,
-                roll_number: record.roll_number,
-                status: record.status
-            });
         });
 
-        // Generate Excel file and send it as a response
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=attendance.xlsx');
-        workbook.xlsx.write(res)
-            .then(() => res.end());
-    });
+        await Promise.all(attendancePromises);
+
+        // Fetch email details and attendance summary
+        const students = await executeQuery(
+            'SELECT email, studentName, studentId FROM students WHERE studentId IN (?)',
+            [rollNumbers]
+        );
+
+        const attendanceSummaries = await Promise.all(
+            rollNumbers.map(async (rollNumber) => {
+                const presentCount = await executeQuery(
+                    'SELECT COUNT(*) AS total FROM attendance WHERE roll_number = ? AND subjectName = ? AND status = "Present"',
+                    [rollNumber, subjectName]
+                );
+                return { rollNumber, total: presentCount[0]?.total || 0 };
+            })
+        );
+
+        // Map students and attendance summaries
+        const studentMap = students.reduce((acc, student) => {
+            acc[student.studentId] = student;
+            return acc;
+        }, {});
+
+        const attendanceMap = attendanceSummaries.reduce((acc, summary) => {
+            acc[summary.rollNumber] = summary.total;
+            return acc;
+        }, {});
+
+        // Send Email Notifications
+        const emailPromises = attendance
+            .filter(record => studentMap[record.roll_number])
+            .map(record => {
+                const student = studentMap[record.roll_number];
+                const totalAttendance = attendanceMap[record.roll_number] || 0;
+
+                const formattedDate = new Date(date).toLocaleDateString();
+
+                const statusMessage = record.status === 'Present'
+                    ? `You are marked as Present for ${subjectName} on ${formattedDate}.`
+                    : `You are marked as Absent for ${subjectName} on ${formattedDate}.`;
+
+                const mailOptions = {
+                    from: 'diggaviprajwal55@gmail.com',
+                    to: student.email,
+                    subject: 'Attendance Status',
+                    text: `Dear ${student.studentName},\n\n${statusMessage}\n\nYour total Present classes for ${subjectName} is ${totalAttendance}.\n\nRegards,\nDEPT OF ISE BLDEACET`
+                };
+
+                return transporter.sendMail(mailOptions);
+            });
+
+        await Promise.all(emailPromises);
+
+        res.json({ message: 'Attendance saved and emails sent successfully' });
+    } catch (err) {
+        console.error('❌ Error saving attendance:', err);
+        res.status(500).json({ message: 'Error saving attendance', error: err.message });
+    }
+});
+
+// Route to get attendance data for a specific student and subject
+app.get('/attendance/:studentId/:subjectName', async (req, res) => {
+    const { studentId, subjectName } = req.params;
+
+    if (!studentId || !subjectName) {
+        return res.status(400).json({ message: "Invalid studentId or subjectName." });
+    }
+
+    try {
+        const attendanceData = await executeQuery(
+            'SELECT * FROM attendance WHERE roll_number = ? AND subjectName = ? AND status = "Present"',
+            [studentId, subjectName]
+        );
+
+        if (attendanceData.length === 0) {
+            return res.status(404).json({ message: 'Attendance data not found' });
+        }
+
+        res.json({ attendance: attendanceData });
+    } catch (err) {
+        console.error('❌ Error fetching attendance:', err);
+        res.status(500).json({ message: 'Error fetching attendance', error: err.message });
+    }
+});
+
+// Route to get students by semester
+app.get('/students/semester/:semester', async (req, res) => {
+    const { semester } = req.params;
+
+    if (!semester) {
+        return res.status(400).json({ message: "Semester not provided." });
+    }
+
+    try {
+        const students = await executeQuery(
+            'SELECT * FROM students WHERE semester = ?',
+            [semester]
+        );
+
+        if (students.length === 0) {
+            return res.status(404).json({ message: 'No students found for this semester.' });
+        }
+
+        res.json({ students });
+    } catch (err) {
+        console.error('❌ Error fetching students by semester:', err);
+        res.status(500).json({ message: 'Error fetching students', error: err.message });
+    }
 });
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
