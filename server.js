@@ -1,17 +1,18 @@
 const express = require('express');
 const mysql = require('mysql');
-const cors = require('cors');  // Add this import
+const cors = require('cors');
+
 const app = express();
 const port = 8080;
 
-// Enable CORS for your frontend (replace with your actual frontend URL)
+// Enable CORS
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',  // Your frontend URL
-    methods: ['GET', 'POST'],            // Allowed methods
-    allowedHeaders: ['Content-Type']     // Allowed headers
+    origin: 'https://bl-de.vercel.app',
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type']
 }));
 
-// Create a function to handle MySQL connection and automatic reconnection
+// MySQL connection and automatic reconnection
 let dbConnection;
 function handleDisconnect() {
     dbConnection = mysql.createConnection({
@@ -40,7 +41,6 @@ function handleDisconnect() {
         }
     });
 }
-
 handleDisconnect();
 
 app.use(express.json());
@@ -75,6 +75,23 @@ app.get('/students/:semester', (req, res) => {
             return res.status(500).send('Error fetching students.');
         }
         res.json(results);
+    });
+});
+
+// Endpoint to delete a student by studentId
+app.delete('/delete-student/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+    const query = 'DELETE FROM students WHERE studentId = ?';
+
+    dbConnection.query(query, [studentId], (error, results) => {
+        if (error) {
+            console.error('Error deleting student:', error);
+            return res.status(500).send('Error deleting student.');
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).send('Student not found.');
+        }
+        res.send('Student deleted successfully!');
     });
 });
 
