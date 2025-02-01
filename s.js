@@ -1,54 +1,44 @@
 const express = require('express');
-const dbConnection = require('../db'); // Import database connection
-const router = express.Router();
+const cors = require('cors');
+const studentRoutes = require('./routes/students');
+const attendanceRoutes = require('./routes/attendance');
 
-// Add a student
-router.post('/add', (req, res) => {
-    const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
+const app = express();
+const port = 8080;
 
-    if (studentId && studentName && semester && phone_number && email && dob && gender) {
-        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
-            if (error) {
-                console.error('Error inserting student data:', error);
-                return res.status(500).send('Error adding student.');
-            }
-            res.send('Student added successfully!');
-        });
-    } else {
-        res.status(400).send('Missing required fields.');
+// ✅ Enable CORS for all responses
+app.use(cors({
+    origin: 'https://bl-de.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}));
+
+// ✅ Global Middleware to Set Headers for All Responses
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "https://bl-de.vercel.app");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(200);
     }
+    
+    next();
 });
 
-// Get students by semester
-router.get('/:semester', (req, res) => {
-    const semester = req.params.semester;
-    const query = 'SELECT * FROM students WHERE semester = ?';
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    dbConnection.query(query, [semester], (error, results) => {
-        if (error) {
-            console.error('Error fetching students:', error);
-            return res.status(500).send('Error fetching students.');
-        }
-        res.json(results);
-    });
+// ✅ Use routes
+app.use('/students', studentRoutes);
+app.use('/attendance', attendanceRoutes);
+
+// ✅ Catch-all Route for 404 Errors
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
 });
 
-// Delete a student by studentId
-router.delete('/delete/:studentId', (req, res) => {
-    const studentId = req.params.studentId;
-    const query = 'DELETE FROM students WHERE studentId = ?';
-
-    dbConnection.query(query, [studentId], (error, results) => {
-        if (error) {
-            console.error('Error deleting student:', error);
-            return res.status(500).send('Error deleting student.');
-        }
-        if (results.affectedRows === 0) {
-            return res.status(404).send('Student not found.');
-        }
-        res.send('Student deleted successfully!');
-    });
+// ✅ Start server
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
-
-module.exports = router;
