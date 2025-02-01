@@ -1,75 +1,172 @@
-const express = require('express');
-const mysql = require('mysql');
-const cors = require('cors');
-const app = express();
-const port = process.env.PORT || 8080;
-
-// Enable CORS for your frontend
-app.use(cors({
-    origin: 'https://bl-de.vercel.app',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
-
-// Create MySQL Connection Pool (Prevents Crashes)
-const dbConnection = mysql.createPool({
-    connectionLimit: 10, // Prevents too many open connections
-    host: 'sql10.freesqldatabase.com',
-    user: 'sql10760370',
-    password: 'GUeSnpUSjf',
-    database: 'sql10760370',
-    port: 3306
-});
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Keep server alive (Prevents Railway from stopping)
-setInterval(() => {
-    console.log("✅ Server is alive");
-}, 30000); // Logs every 30 seconds
-
-// Endpoint to add a student
-app.post('/add-student', (req, res) => {
-    const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
-
-    if (studentId && studentName && semester && phone_number && email && dob && gender) {
-        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
-            if (error) {
-                console.error('❌ Error inserting student data:', error);
-                return res.status(500).send('Error adding student.');
-            }
-            res.send('✅ Student added successfully!');
-        });
-    } else {
-        res.status(400).send('❌ Missing required fields.');
-    }
-});
-
-// Endpoint to get students by semester
-app.get('/students/:semester', (req, res) => {
-    const semester = req.params.semester;
-    const query = 'SELECT * FROM students WHERE semester = ?';
-
-    dbConnection.query(query, [semester], (error, results) => {
-        if (error) {
-            console.error('❌ Error fetching students:', error);
-            return res.status(500).send('Error fetching students.');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
-        res.json(results);
-    });
-});
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"], input[type="email"], input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+        }
+        .student-list {
+            margin-top: 30px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .student-list th, .student-list td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
 
-// Graceful Shutdown (Prevents Railway Auto-Kill)
-process.on('SIGTERM', () => {
-    console.log('🚨 Received SIGTERM, shutting down gracefully...');
-    if (dbConnection) dbConnection.end();
-    process.exit(0);
-});
+    <div class="container">
+        <h1>Student Management System</h1>
 
-// Start Server
-app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
-});
+        <!-- Add Student Form -->
+        <form id="addStudentForm">
+            <h3>Add New Student</h3>
+            <input type="text" id="studentId" placeholder="Student ID" required><br>
+            <input type="text" id="studentName" placeholder="Student Name" required><br>
+            <input type="text" id="semester" placeholder="Semester" required><br>
+            <input type="text" id="phone_number" placeholder="Phone Number" required><br>
+            <input type="email" id="email" placeholder="Email" required><br>
+            <input type="date" id="dob" placeholder="Date of Birth" required><br>
+            <input type="text" id="gender" placeholder="Gender" required><br>
+            <input type="submit" value="Add Student">
+        </form>
+
+        <div class="error" id="addStudentError"></div>
+
+        <br>
+
+        <!-- Get Students by Semester -->
+        <h3>Get Students by Semester</h3>
+        <input type="text" id="semesterSearch" placeholder="Enter Semester" required>
+        <button onclick="getStudentsBySemester()">Search</button>
+
+        <table class="student-list" id="studentList">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Semester</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>DOB</th>
+                    <th>Gender</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Student records will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Handle form submission to add a student
+        document.getElementById("addStudentForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const studentId = document.getElementById("studentId").value;
+            const studentName = document.getElementById("studentName").value;
+            const semester = document.getElementById("semester").value;
+            const phone_number = document.getElementById("phone_number").value;
+            const email = document.getElementById("email").value;
+            const dob = document.getElementById("dob").value;
+            const gender = document.getElementById("gender").value;
+
+            const studentData = { studentId, studentName, semester, phone_number, email, dob, gender };
+
+            fetch('https://bl-de.vercel.app/add-student', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(studentData)
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);  // Alert the user about the result
+                document.getElementById("addStudentForm").reset();  // Reset the form
+                document.getElementById("addStudentError").innerHTML = ''; // Clear error message
+            })
+            .catch(error => {
+                document.getElementById("addStudentError").innerHTML = "Error adding student. Please try again.";
+            });
+        });
+
+        // Function to get students by semester
+        function getStudentsBySemester() {
+            const semester = document.getElementById("semesterSearch").value;
+
+            fetch(`https://bl-de.vercel.app/students/${semester}`)
+            .then(response => response.json())
+            .then(students => {
+                const tableBody = document.getElementById("studentList").querySelector("tbody");
+                tableBody.innerHTML = "";  // Clear previous results
+
+                if (students.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7">No students found for this semester.</td></tr>`;
+                } else {
+                    students.forEach(student => {
+                        const row = `<tr>
+                                        <td>${student.studentId}</td>
+                                        <td>${student.studentName}</td>
+                                        <td>${student.semester}</td>
+                                        <td>${student.phone_number}</td>
+                                        <td>${student.email}</td>
+                                        <td>${student.dob}</td>
+                                        <td>${student.gender}</td>
+                                      </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching students:', error);
+            });
+        }
+    </script>
+
+</body>
+</html>
