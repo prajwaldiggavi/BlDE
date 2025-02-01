@@ -7,38 +7,48 @@ const port = 8080;
 
 // Enable CORS
 app.use(cors({
-    origin: 'https://bl-de.vercel.app', // Adjust as needed
+    origin: 'https://your-frontend-url.vercel.app', // Replace with your actual frontend URL on Vercel
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }));
 
-// MySQL connection pool for efficient handling of multiple connections
-const dbConnection = mysql.createPool({
-    connectionLimit: 10,  // Limits the number of concurrent connections to the database
-    host: 'sql10.freesqldatabase.com',
-    user: 'sql10760370',
-    password: 'GUeSnpUSjf',
-    database: 'sql10760370',
-    port: 3306
-});
+// MySQL connection and automatic reconnection
+let dbConnection;
+function handleDisconnect() {
+    dbConnection = mysql.createConnection({
+        host: 'sql10.freesqldatabase.com',
+        user: 'sql10760370',
+        password: 'GUeSnpUSjf',
+        database: 'sql10760370',
+        port: 3306
+    });
 
-// Check database connection
-dbConnection.getConnection((err, connection) => {
-    if (err) {
-        console.error('Error getting connection from pool:', err);
-    } else {
-        console.log('Connected to db as id ' + connection.threadId);
-        connection.release(); // Release connection back to the pool
-    }
-});
+    dbConnection.connect(function(err) {
+        if (err) {
+            console.error('Error connecting to db: ' + err.stack);
+            setTimeout(handleDisconnect, 2000);
+        } else {
+            console.log('Connected to db as id ' + dbConnection.threadId);
+        }
+    });
 
-app.use(express.json());  // Parse JSON bodies
-app.use(express.urlencoded({ extended: true }));  // Parse URL-encoded bodies
+    dbConnection.on('error', function(err) {
+        console.error('DB error: ', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
+handleDisconnect();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Endpoint to add a student
 app.post('/add-student', (req, res) => {
     const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
-    console.log('Request to add student:', req.body);  // Log incoming data
 
     if (studentId && studentName && semester && phone_number && email && dob && gender) {
         const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -47,11 +57,9 @@ app.post('/add-student', (req, res) => {
                 console.error('Error inserting student data:', error);
                 return res.status(500).send('Error adding student.');
             }
-            console.log('Student added successfully:', results);  // Log success
             res.send('Student added successfully!');
         });
     } else {
-        console.log('Missing required fields in request:', req.body);  // Log missing fields
         res.status(400).send('Missing required fields.');
     }
 });
@@ -87,18 +95,6 @@ app.delete('/delete-student/:studentId', (req, res) => {
     });
 });
 
-// Handle uncaught exceptions and unhandled promise rejections
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught exception:', err);
-    process.exit(1);  // Exit process on uncaught exceptions
-});
-
-process.on('unhandledRejection', (err) => {
-    console.error('Unhandled rejection:', err);
-    process.exit(1);  // Exit process on unhandled promise rejections
-});
-
-// Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
