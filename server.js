@@ -3,11 +3,11 @@ const mysql = require('mysql');
 const cors = require('cors');
 
 const app = express();
-const port = 8080;
+const port = 3001; // Changed to match the frontend
 
 // Enable CORS
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',
+    origin: '*', // Allow all origins for development, change to specific origin in production
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }));
@@ -46,6 +46,8 @@ handleDisconnect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Existing endpoints
+
 // Endpoint to add a student
 app.post('/add-student', (req, res) => {
     const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
@@ -64,8 +66,8 @@ app.post('/add-student', (req, res) => {
     }
 });
 
-// Endpoint to get students by semester
-app.get('/students/:semester', (req, res) => {
+// Modified endpoint to get students by semester
+app.get('/students/semester/:semester', (req, res) => {
     const semester = req.params.semester;
     const query = 'SELECT * FROM students WHERE semester = ?';
 
@@ -74,7 +76,7 @@ app.get('/students/:semester', (req, res) => {
             console.error('Error fetching students:', error);
             return res.status(500).send('Error fetching students.');
         }
-        res.json(results);
+        res.json({ students: results }); // Wrap results in an object with 'students' key
     });
 });
 
@@ -93,6 +95,46 @@ app.delete('/delete-student/:studentId', (req, res) => {
         }
         res.send('Student deleted successfully!');
     });
+});
+
+// New endpoint to submit attendance
+app.post('/attendance', (req, res) => {
+    const { date, subjectName, semester, attendance } = req.body;
+
+    if (!date || !subjectName || !semester || !attendance || !Array.isArray(attendance)) {
+        return res.status(400).send('Invalid input data');
+    }
+
+    const values = attendance.map(record => [date, subjectName, semester, record.roll_number, record.status]);
+    const query = 'INSERT INTO attendance (date, subject_name, semester, student_id, status) VALUES ?';
+
+    dbConnection.query(query, [values], (error, results) => {
+        if (error) {
+            console.error('Error inserting attendance data:', error);
+            return res.status(500).send('Error saving attendance.');
+        }
+        res.send('Attendance submitted successfully!');
+    });
+});
+
+// New endpoint to fetch attendance for a specific student and subject
+app.get('/attendance/:studentId/:subjectName', (req, res) => {
+    const { studentId, subjectName } = req.params;
+    const query = 'SELECT date, status FROM attendance WHERE student_id = ? AND subject_name = ?';
+
+    dbConnection.query(query, [studentId, subjectName], (error, results) => {
+        if (error) {
+            console.error('Error fetching attendance:', error);
+            return res.status(500).send('Error fetching attendance.');
+        }
+        res.json({ attendance: results });
+    });
+});
+
+// Optional: Endpoint to export attendance (placeholder)
+app.get('/export-attendance', (req, res) => {
+    // Implement export logic here
+    res.send('Attendance export feature not implemented yet.');
 });
 
 app.listen(port, () => {
