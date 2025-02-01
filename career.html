@@ -240,73 +240,74 @@
             </div>
         
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-               <script>
-        const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway app URL
+   <script>
+    const serverUrl = 'https://bldeacet.up.railway.app'; // Updated Railway app URL
 
-        function addStudent() {
-            const studentId = $('#studentId').val();
-            const studentName = $('#studentName').val();
-            const semester = $('#semester').val();
-            const phone_number = $('#phone_number').val();
-            const email = $('#email').val();
-            const dob = $('#dob').val();
-            const gender = $('#gender').val();
+    function addStudent() {
+        const studentId = $('#studentId').val();
+        const studentName = $('#studentName').val();
+        const semester = $('#semester').val();
+        const phone_number = $('#phone_number').val();
+        const email = $('#email').val();
+        const dob = $('#dob').val();
+        const gender = $('#gender').val();
 
-            if (studentId && studentName && semester && phone_number && email && dob && gender) {
-                $.ajax({
-                    url: ${serverUrl}/add-student,
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ studentId, studentName, semester, phone_number, email, dob, gender }),
-                    success: function(response) {
-                        alert(response);
-                        $('#studentForm')[0].reset(); // Clear the form
-                    },
-                    error: function(error) {
-                        alert('Error: ' + error.responseText);
-                    }
-                });
-            } else {
-                alert('Please fill out all required fields.');
-            }
+        if (studentId && studentName && semester && phone_number && email && dob && gender) {
+            $.ajax({
+                url: `${serverUrl}/add-student`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ studentId, studentName, semester, phone_number, email, dob, gender }),
+                success: function(response) {
+                    alert(response);
+                    $('#studentForm')[0].reset(); // Clear the form
+                },
+                error: function(error) {
+                    alert('Error: ' + error.responseText);
+                }
+            });
+        } else {
+            alert('Please fill out all required fields.');
         }
+    }
 
-        function showStudents() {
-            const semester = $('#showSemester').val();
+    function showStudents() {
+        const semester = $('#showSemester').val();
 
-            if (semester) {
-                $.ajax({
-                    url: ${serverUrl}/students/${semester},
-                    type: 'GET',
-                    success: function(students) {
-                        $('#studentList').empty();  // Clear previous list
-                        if (students.length > 0) {
-                            students.forEach(student => {
-                                $('#studentList').append(
-                                    <tr>
-                                        <td>${student.studentId}</td>
-                                        <td>${student.studentName}</td>
-                                        <td>${student.semester}</td>
-                                        <td>${student.phone_number}</td>
-                                        <td>${student.email}</td>
-                                        <td>${student.dob}</td>
-                                        <td>${student.gender}</td>
-                                    </tr>
-                                );
-                            });
-                        } else {
-                            $('#studentList').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
-                        }
-                    },
-                    error: function(error) {
-                        alert('Error: ' + error.responseText);
+        if (semester) {
+            $.ajax({
+                url: `${serverUrl}/students/${semester}`,
+                type: 'GET',
+                success: function(students) {
+                    $('#studentList').empty();  // Clear previous list
+                    if (students.length > 0) {
+                        students.forEach(student => {
+                            $('#studentList').append(
+                                `<tr>
+                                    <td>${student.studentId}</td>
+                                    <td>${student.studentName}</td>
+                                    <td>${student.semester}</td>
+                                    <td>${student.phone_number}</td>
+                                    <td>${student.email}</td>
+                                    <td>${student.dob}</td>
+                                    <td>${student.gender}</td>
+                                </tr>`
+                            );
+                        });
+                    } else {
+                        $('#studentList').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
                     }
-                });
-            } else {
-                alert('Please select a semester.');
-            }
+                },
+                error: function(error) {
+                    alert('Error: ' + error.responseText);
+                }
+            });
+        } else {
+            alert('Please select a semester.');
         }
-    </script>
+    }
+</script>
+
         </body>
         
         <!-- /Content wrapper -->
