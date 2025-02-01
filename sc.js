@@ -13,35 +13,52 @@ router.use((req, res, next) => {
   next();
 });
 
-// Mark attendance
-router.post('/mark', (req, res) => {
-  const { studentId, date, status } = req.body;
+// Add a student
+router.post('/add', (req, res) => {
+  const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
 
-  if (!studentId || !date || !status) {
-    return res.status(400).json({ error: 'Missing required fields.' });
+  if (studentId && studentName && semester && phone_number && email && dob && gender) {
+    const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
+      if (error) {
+        console.error('Error inserting student data:', error);
+        return res.status(500).json({ error: 'Error adding student.' });
+      }
+      res.json({ message: 'Student added successfully!' });
+    });
+  } else {
+    res.status(400).json({ error: 'Missing required fields.' });
   }
+});
 
-  const query = 'INSERT INTO attendance (studentId, date, status) VALUES (?, ?, ?)';
-  dbConnection.query(query, [studentId, date, status], (error, results) => {
+// Get students by semester
+router.get('/:semester', (req, res) => {
+  const semester = req.params.semester;
+  const query = 'SELECT * FROM students WHERE semester = ?';
+
+  dbConnection.query(query, [semester], (error, results) => {
     if (error) {
-      console.error('Error marking attendance:', error);
-      return res.status(500).json({ error: 'Error marking attendance.' });
+      console.error('Error fetching students:', error);
+      return res.status(500).json({ error: 'Error fetching students.' });
     }
-    res.json({ message: 'Attendance marked successfully!' });
+    res.json(results);
   });
 });
 
-// Get attendance by studentId
-router.get('/:studentId', (req, res) => {
+// Delete a student by studentId
+router.delete('/delete/:studentId', (req, res) => {
   const studentId = req.params.studentId;
-  const query = 'SELECT * FROM attendance WHERE studentId = ?';
+  const query = 'DELETE FROM students WHERE studentId = ?';
 
   dbConnection.query(query, [studentId], (error, results) => {
     if (error) {
-      console.error('Error fetching attendance:', error);
-      return res.status(500).json({ error: 'Error fetching attendance.' });
+      console.error('Error deleting student:', error);
+      return res.status(500).json({ error: 'Error deleting student.' });
     }
-    res.json(results);
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: 'Student not found.' });
+    }
+    res.json({ message: 'Student deleted successfully!' });
   });
 });
 
