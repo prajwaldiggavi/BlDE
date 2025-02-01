@@ -8,47 +8,34 @@
 </head>
 <body>
 
-    <h1>Student Management</h1>
+    <h1>Student Management System</h1>
 
+    <!-- Add Student Form -->
     <form id="studentForm">
-        <label for="studentId">Student ID:</label>
-        <input type="text" id="studentId" name="studentId" required><br><br>
-
-        <label for="studentName">Name:</label>
-        <input type="text" id="studentName" name="studentName" required><br><br>
-
-        <label for="semester">Semester:</label>
-        <input type="text" id="semester" name="semester" required><br><br>
-
-        <label for="phone_number">Phone Number:</label>
-        <input type="text" id="phone_number" name="phone_number" required><br><br>
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
-
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" name="dob" required><br><br>
-
-        <label for="gender">Gender:</label>
-        <select id="gender" name="gender" required>
+        <input type="text" id="studentId" placeholder="Student ID" required><br>
+        <input type="text" id="studentName" placeholder="Student Name" required><br>
+        <input type="text" id="semester" placeholder="Semester" required><br>
+        <input type="text" id="phone_number" placeholder="Phone Number" required><br>
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="date" id="dob" placeholder="Date of Birth" required><br>
+        <select id="gender" required>
+            <option value="">Select Gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
-            <option value="Other">Other</option>
-        </select><br><br>
-
+        </select><br>
         <button type="button" onclick="addStudent()">Add Student</button>
     </form>
 
-    <h2>Students List</h2>
-    <label for="showSemester">Select Semester:</label>
-    <input type="text" id="showSemester" name="showSemester" required>
-    <button onclick="showStudents()">Show Students</button>
+    <!-- Show Students by Semester -->
+    <h2>View Students by Semester</h2>
+    <input type="text" id="showSemester" placeholder="Enter Semester">
+    <button type="button" onclick="showStudents()">Show Students</button>
 
-    <table id="studentTable" border="1">
+    <table id="studentList" border="1">
         <thead>
             <tr>
                 <th>Student ID</th>
-                <th>Name</th>
+                <th>Student Name</th>
                 <th>Semester</th>
                 <th>Phone Number</th>
                 <th>Email</th>
@@ -56,13 +43,12 @@
                 <th>Gender</th>
             </tr>
         </thead>
-        <tbody id="studentList">
-            <!-- Students will be displayed here -->
+        <tbody>
         </tbody>
     </table>
 
     <script>
-        const serverUrl = 'https://blde-production.up.railway.app'; // Correct Railway app URL
+        const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway app URL
 
         function addStudent() {
             const studentId = $('#studentId').val();
@@ -100,10 +86,10 @@
                     url: `${serverUrl}/students/${semester}`,
                     type: 'GET',
                     success: function(students) {
-                        $('#studentList').empty();  // Clear previous list
+                        $('#studentList tbody').empty();  // Clear previous list
                         if (students.length > 0) {
                             students.forEach(student => {
-                                $('#studentList').append(`
+                                $('#studentList tbody').append(`
                                     <tr>
                                         <td>${student.studentId}</td>
                                         <td>${student.studentName}</td>
@@ -116,7 +102,7 @@
                                 `);
                             });
                         } else {
-                            $('#studentList').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
+                            $('#studentList tbody').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
                         }
                     },
                     error: function(error) {
