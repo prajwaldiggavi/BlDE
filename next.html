@@ -241,9 +241,9 @@
         
 
 <script>
-    const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway backend URL
+    const serverUrl = 'https://blde-production.up.railway.app'; // Backend URL on Railway
 
-    // ✅ Function to Add Student
+    // ✅ Add Student
     function addStudent() {
         const studentData = {
             studentId: $('#studentId').val(),
@@ -261,14 +261,14 @@
         }
 
         $.ajax({
-            url: `${serverUrl}/add-student`, // Correct endpoint to add student
+            url: `${serverUrl}/add-student`,
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(studentData),
             success: function(response) {
                 alert('✅ Student added successfully!');
-                $('#studentForm')[0].reset(); // Clear form
-                showStudents(); // Refresh student list
+                $('#studentForm')[0].reset();
+                showStudents();
             },
             error: function(xhr) {
                 alert(`❌ Error: ${xhr.responseText || 'Failed to add student.'}`);
@@ -276,20 +276,19 @@
         });
     }
 
-    // ✅ Function to Fetch and Show Students
+    // ✅ Show Students by Semester
     function showStudents() {
         const semester = $('#showSemester').val();
-
         if (!semester) {
             alert('⚠️ Please select a semester.');
             return;
         }
 
         $.ajax({
-            url: `${serverUrl}/students/${semester}`, // Correct endpoint to fetch students by semester
+            url: `${serverUrl}/students/${semester}`,
             type: 'GET',
             success: function(students) {
-                $('#studentList').empty(); // Clear old list
+                $('#studentList').empty();
 
                 if (students.length > 0) {
                     students.forEach(student => {
@@ -303,15 +302,13 @@
                                 <td>${student.dob}</td>
                                 <td>${student.gender}</td>
                                 <td>
-                                    <button class="btn btn-danger" onclick="deleteStudent('${student.studentId}')">
-                                        🗑 Delete
-                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteStudent('${student.studentId}')">🗑 Delete</button>
                                 </td>
                             </tr>
                         `);
                     });
                 } else {
-                    $('#studentList').append('<tr><td colspan="8">⚠️ No students found for this semester.</td></tr>');
+                    $('#studentList').append('<tr><td colspan="8">⚠️ No students found.</td></tr>');
                 }
             },
             error: function(xhr) {
@@ -320,18 +317,16 @@
         });
     }
 
-    // ✅ Function to Delete a Student
+    // ✅ Delete Student
     function deleteStudent(studentId) {
-        if (!confirm(`❌ Are you sure you want to delete student with ID: ${studentId}?`)) {
-            return;
-        }
+        if (!confirm(`❌ Are you sure you want to delete student with ID: ${studentId}?`)) return;
 
         $.ajax({
-            url: `${serverUrl}/delete-student/${studentId}`, // Correct endpoint to delete student
+            url: `${serverUrl}/delete-student/${studentId}`,
             type: 'DELETE',
-            success: function(response) {
+            success: function() {
                 alert('✅ Student deleted successfully!');
-                $(`#row-${studentId}`).remove(); // Remove row without reloading
+                $(`#row-${studentId}`).remove();
             },
             error: function(xhr) {
                 alert(`❌ Error: ${xhr.responseText || 'Failed to delete student.'}`);
@@ -339,6 +334,7 @@
         });
     }
 </script>
+
 
 
         </body>
