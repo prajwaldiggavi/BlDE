@@ -239,93 +239,107 @@
                 </table>
             </div>
         
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
- <script>
-    const serverUrl = 'https://blde-production.up.railway.app'; // Railway backend URL
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway backend URL
 
+    // ✅ Function to Add Student
     function addStudent() {
-        const studentId = $('#studentId').val();
-        const studentName = $('#studentName').val();
-        const semester = $('#semester').val();
-        const phone_number = $('#phone_number').val();
-        const email = $('#email').val();
-        const dob = $('#dob').val();
-        const gender = $('#gender').val();
+        const studentData = {
+            studentId: $('#studentId').val(),
+            studentName: $('#studentName').val(),
+            semester: $('#semester').val(),
+            phone_number: $('#phone_number').val(),
+            email: $('#email').val(),
+            dob: $('#dob').val(),
+            gender: $('#gender').val()
+        };
 
-        if (studentId && studentName && semester && phone_number && email && dob && gender) {
-            $.ajax({
-                url: `${serverUrl}/add-student`,
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ studentId, studentName, semester, phone_number, email, dob, gender }),
-                success: function(response) {
-                    alert(response);
-                    $('#studentForm')[0].reset();
-                },
-                error: function(error) {
-                    alert('❌ Error: ' + error.responseText);
-                }
-            });
-        } else {
+        if (Object.values(studentData).some(field => !field)) {
             alert('⚠️ Please fill out all required fields.');
+            return;
         }
+
+        $.ajax({
+            url: `${serverUrl}/add-student`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(studentData),
+            success: function(response) {
+                alert('✅ Student added successfully!');
+                $('#studentForm')[0].reset(); // Clear form
+                showStudents(); // Refresh student list
+            },
+            error: function(xhr) {
+                alert(`❌ Error: ${xhr.responseText || 'Failed to add student.'}`);
+            }
+        });
     }
 
+    // ✅ Function to Fetch and Show Students
     function showStudents() {
         const semester = $('#showSemester').val();
 
-        if (semester) {
-            $.ajax({
-                url: `${serverUrl}/students/${semester}`,
-                type: 'GET',
-                success: function(students) {
-                    $('#studentList').empty();
-                    if (students.length > 0) {
-                        students.forEach(student => {
-                            $('#studentList').append(`
-                                <tr>
-                                    <td>${student.studentId}</td>
-                                    <td>${student.studentName}</td>
-                                    <td>${student.semester}</td>
-                                    <td>${student.phone_number}</td>
-                                    <td>${student.email}</td>
-                                    <td>${student.dob}</td>
-                                    <td>${student.gender}</td>
-                                    <td>
-                                        <button class="btn btn-danger" onclick="deleteStudent('${student.studentId}')">Delete</button>
-                                    </td>
-                                </tr>
-                            `);
-                        });
-                    } else {
-                        $('#studentList').append('<tr><td colspan="8">⚠️ No students found for this semester.</td></tr>');
-                    }
-                },
-                error: function(error) {
-                    alert('❌ Error: ' + error.responseText);
-                }
-            });
-        } else {
+        if (!semester) {
             alert('⚠️ Please select a semester.');
+            return;
         }
+
+        $.ajax({
+            url: `${serverUrl}/students/${semester}`,
+            type: 'GET',
+            success: function(students) {
+                $('#studentList').empty(); // Clear old list
+
+                if (students.length > 0) {
+                    students.forEach(student => {
+                        $('#studentList').append(`
+                            <tr id="row-${student.studentId}">
+                                <td>${student.studentId}</td>
+                                <td>${student.studentName}</td>
+                                <td>${student.semester}</td>
+                                <td>${student.phone_number}</td>
+                                <td>${student.email}</td>
+                                <td>${student.dob}</td>
+                                <td>${student.gender}</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="deleteStudent('${student.studentId}')">
+                                        🗑 Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    $('#studentList').append('<tr><td colspan="8">⚠️ No students found for this semester.</td></tr>');
+                }
+            },
+            error: function(xhr) {
+                alert(`❌ Error: ${xhr.responseText || 'Failed to fetch students.'}`);
+            }
+        });
     }
 
+    // ✅ Function to Delete a Student
     function deleteStudent(studentId) {
-        if (confirm(`❌ Are you sure you want to delete student with ID: ${studentId}?`)) {
-            $.ajax({
-                url: `${serverUrl}/delete-student/${studentId}`,
-                type: 'DELETE',
-                success: function(response) {
-                    alert(response);
-                    showStudents();
-                },
-                error: function(error) {
-                    alert('❌ Error: ' + error.responseText);
-                }
-            });
+        if (!confirm(`❌ Are you sure you want to delete student with ID: ${studentId}?`)) {
+            return;
         }
+
+        $.ajax({
+            url: `${serverUrl}/delete-student/${studentId}`,
+            type: 'DELETE',
+            success: function(response) {
+                alert('✅ Student deleted successfully!');
+                $(`#row-${studentId}`).remove(); // Remove row without reloading
+            },
+            error: function(xhr) {
+                alert(`❌ Error: ${xhr.responseText || 'Failed to delete student.'}`);
+            }
+        });
     }
 </script>
+
 
         </body>
         
