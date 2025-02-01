@@ -7,7 +7,7 @@ const port = 8080;
 
 // Enable CORS
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',
+    origin: 'https://bl-de.vercel.app', // Replace with your frontend URL
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }));
@@ -26,7 +26,7 @@ function handleDisconnect() {
     dbConnection.connect(function(err) {
         if (err) {
             console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnect, 2000); // Retry connection
         } else {
             console.log('Connected to db as id ' + dbConnection.threadId);
         }
@@ -35,7 +35,7 @@ function handleDisconnect() {
     dbConnection.on('error', function(err) {
         console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnect(); // Reconnect if connection is lost
         } else {
             throw err;
         }
@@ -43,6 +43,7 @@ function handleDisconnect() {
 }
 handleDisconnect();
 
+// Middleware to parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -95,6 +96,7 @@ app.delete('/delete-student/:studentId', (req, res) => {
     });
 });
 
+// Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
