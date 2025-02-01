@@ -4,167 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Management</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        input[type="text"], input[type="email"], input[type="date"], input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .error {
-            color: red;
-        }
-        .student-list {
-            margin-top: 30px;
-            border-collapse: collapse;
-            width: 100%;
-        }
-        .student-list th, .student-list td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Student Management System</h1>
+    <h2>Add Student</h2>
+    <form id="studentForm">
+        <input type="text" id="studentId" placeholder="Student ID" required>
+        <input type="text" id="studentName" placeholder="Name" required>
+        <input type="text" id="semester" placeholder="Semester" required>
+        <input type="text" id="phone_number" placeholder="Phone Number" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="date" id="dob" required>
+        <select id="gender">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        <button type="button" onclick="addStudent()">Add Student</button>
+    </form>
 
-        <!-- Add Student Form -->
-        <form id="addStudentForm">
-            <h3>Add New Student</h3>
-            <input type="text" id="studentId" placeholder="Student ID" required><br>
-            <input type="text" id="studentName" placeholder="Student Name" required><br>
-            <input type="text" id="semester" placeholder="Semester" required><br>
-            <input type="text" id="phone_number" placeholder="Phone Number" required><br>
-            <input type="email" id="email" placeholder="Email" required><br>
-            <input type="date" id="dob" placeholder="Date of Birth" required><br>
-            <input type="text" id="gender" placeholder="Gender" required><br>
-            <input type="submit" value="Add Student">
-        </form>
+    <h2>View Students</h2>
+    <select id="showSemester">
+        <option value="">Select Semester</option>
+        <option value="1">1st Semester</option>
+        <option value="2">2nd Semester</option>
+        <option value="3">3rd Semester</option>
+    </select>
+    <button onclick="showStudents()">Show Students</button>
 
-        <div class="error" id="addStudentError"></div>
-
-        <br>
-
-        <!-- Get Students by Semester -->
-        <h3>Get Students by Semester</h3>
-        <input type="text" id="semesterSearch" placeholder="Enter Semester" required>
-        <button onclick="getStudentsBySemester()">Search</button>
-
-        <table class="student-list" id="studentList">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Semester</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>DOB</th>
-                    <th>Gender</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Student records will be populated here -->
-            </tbody>
-        </table>
-    </div>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Semester</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>DOB</th>
+                <th>Gender</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="studentList"></tbody>
+    </table>
 
     <script>
-        // Handle form submission to add a student
-        document.getElementById("addStudentForm").addEventListener("submit", function(event) {
-            event.preventDefault();
+        const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway URL
 
-            const studentId = document.getElementById("studentId").value;
-            const studentName = document.getElementById("studentName").value;
-            const semester = document.getElementById("semester").value;
-            const phone_number = document.getElementById("phone_number").value;
-            const email = document.getElementById("email").value;
-            const dob = document.getElementById("dob").value;
-            const gender = document.getElementById("gender").value;
+        function addStudent() {
+            const student = {
+                studentId: $('#studentId').val(),
+                studentName: $('#studentName').val(),
+                semester: $('#semester').val(),
+                phone_number: $('#phone_number').val(),
+                email: $('#email').val(),
+                dob: $('#dob').val(),
+                gender: $('#gender').val()
+            };
 
-            const studentData = { studentId, studentName, semester, phone_number, email, dob, gender };
+            if (Object.values(student).every(value => value)) {
+                $.post(`${serverUrl}/add-student`, JSON.stringify(student), function(response) {
+                    alert(response);
+                    $('#studentForm')[0].reset();
+                    showStudents();
+                }).fail(error => alert('Error: ' + error.responseText));
+            } else {
+                alert('Please fill all fields.');
+            }
+        }
 
-            fetch('https://bl-de.vercel.app/add-student', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(studentData)
-            })
-            .then(response => response.text())
-            .then(data => {
-                alert(data);  // Alert the user about the result
-                document.getElementById("addStudentForm").reset();  // Reset the form
-                document.getElementById("addStudentError").innerHTML = ''; // Clear error message
-            })
-            .catch(error => {
-                document.getElementById("addStudentError").innerHTML = "Error adding student. Please try again.";
-            });
-        });
+        function showStudents() {
+            const semester = $('#showSemester').val();
+            if (semester) {
+                $.get(`${serverUrl}/students/${semester}`, function(students) {
+                    $('#studentList').empty();
+                    if (students.length > 0) {
+                        students.forEach(student => {
+                            $('#studentList').append(`
+                                <tr id="row-${student.studentId}">
+                                    <td>${student.studentId}</td>
+                                    <td>${student.studentName}</td>
+                                    <td>${student.semester}</td>
+                                    <td>${student.phone_number}</td>
+                                    <td>${student.email}</td>
+                                    <td>${student.dob}</td>
+                                    <td>${student.gender}</td>
+                                    <td><button onclick="deleteStudent('${student.studentId}')">Delete</button></td>
+                                </tr>
+                            `);
+                        });
+                    } else {
+                        $('#studentList').append('<tr><td colspan="8">No students found.</td></tr>');
+                    }
+                }).fail(error => alert('Error: ' + error.responseText));
+            } else {
+                alert('Select a semester.');
+            }
+        }
 
-        // Function to get students by semester
-        function getStudentsBySemester() {
-            const semester = document.getElementById("semesterSearch").value;
-
-            fetch(`https://bl-de.vercel.app/students/${semester}`)
-            .then(response => response.json())
-            .then(students => {
-                const tableBody = document.getElementById("studentList").querySelector("tbody");
-                tableBody.innerHTML = "";  // Clear previous results
-
-                if (students.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="7">No students found for this semester.</td></tr>`;
-                } else {
-                    students.forEach(student => {
-                        const row = `<tr>
-                                        <td>${student.studentId}</td>
-                                        <td>${student.studentName}</td>
-                                        <td>${student.semester}</td>
-                                        <td>${student.phone_number}</td>
-                                        <td>${student.email}</td>
-                                        <td>${student.dob}</td>
-                                        <td>${student.gender}</td>
-                                      </tr>`;
-                        tableBody.innerHTML += row;
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching students:', error);
-            });
+        function deleteStudent(studentId) {
+            if (confirm('Are you sure?')) {
+                $.ajax({ url: `${serverUrl}/delete-student/${studentId}`, type: 'DELETE' })
+                    .done(response => {
+                        alert(response);
+                        $(`#row-${studentId}`).remove();
+                    }).fail(error => alert('Error: ' + error.responseText));
+            }
         }
     </script>
 
