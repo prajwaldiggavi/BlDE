@@ -1,23 +1,35 @@
-const express = require('express');
-const cors = require('cors');
+const mysql = require('mysql');
 
-const app = express();
-const port = 8080;
+let dbConnection;
 
-// CORS Middleware
-app.use(cors({
-    origin: ['https://bl-de.vercel.app'], // Allow your frontend domain
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type']
-}));
+function handleDisconnect() {
+    dbConnection = mysql.createConnection({
+        host: 'sql10.freesqldatabase.com',
+        user: 'sql10760370',
+        password: 'GUeSnpUSjf',
+        database: 'sql10760370',
+        port: 3306
+    });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+    dbConnection.connect(function(err) {
+        if (err) {
+            console.error('Error connecting to database:', err);
+            setTimeout(handleDisconnect, 2000); // Reconnect after 2 seconds
+        } else {
+            console.log('Connected to database');
+        }
+    });
 
-// Your routes here
-app.use('/students', require('./routes/students'));
-app.use('/attendance', require('./routes/attendance'));
+    dbConnection.on('error', function(err) {
+        console.error('Database error:', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect(); // Reconnect on lost connection
+        } else {
+            throw err;
+        }
+    });
+}
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
+handleDisconnect();
+
+module.exports = dbConnection;
