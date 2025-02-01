@@ -239,7 +239,7 @@
                 </table>
             </div>
         
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script>
     const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway backend URL
 
@@ -261,7 +261,7 @@
         }
 
         $.ajax({
-            url: `${serverUrl}/add-student`,
+            url: `${serverUrl}/add-student`, // Correct endpoint to add student
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(studentData),
@@ -286,7 +286,7 @@
         }
 
         $.ajax({
-            url: `${serverUrl}/students/${semester}`,
+            url: `${serverUrl}/students/${semester}`, // Correct endpoint to fetch students by semester
             type: 'GET',
             success: function(students) {
                 $('#studentList').empty(); // Clear old list
@@ -327,7 +327,7 @@
         }
 
         $.ajax({
-            url: `${serverUrl}/delete-student/${studentId}`,
+            url: `${serverUrl}/delete-student/${studentId}`, // Correct endpoint to delete student
             type: 'DELETE',
             success: function(response) {
                 alert('✅ Student deleted successfully!');
