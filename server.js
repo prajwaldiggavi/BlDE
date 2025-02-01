@@ -1,10 +1,9 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-require('dotenv').config(); // Load environment variables
 
 const app = express();
-const PORT = process.env.PORT || 8080; // Railway assigns a port automatically
+const port = 8080;
 
 // Enable CORS
 app.use(cors({
@@ -13,30 +12,30 @@ app.use(cors({
     allowedHeaders: ['Content-Type']
 }));
 
-// MySQL Connection with automatic reconnection
+// MySQL connection and automatic reconnection
 let dbConnection;
 function handleDisconnect() {
     dbConnection = mysql.createConnection({
-        host: process.env.DB_HOST || 'sql10.freesqldatabase.com',
-        user: process.env.DB_USER || 'sql10760370',
-        password: process.env.DB_PASS || 'GUeSnpUSjf',
-        database: process.env.DB_NAME || 'sql10760370',
-        port: process.env.DB_PORT || 3306
+        host: 'sql10.freesqldatabase.com',
+        user: 'sql10760370',
+        password: 'GUeSnpUSjf',
+        database: 'sql10760370',
+        port: 3306
     });
 
-    dbConnection.connect(err => {
+    dbConnection.connect(function(err) {
         if (err) {
-            console.error('Database connection error:', err);
-            setTimeout(handleDisconnect, 2000); // Retry after 2 seconds
+            console.error('Error connecting to db: ' + err.stack);
+            setTimeout(handleDisconnect, 2000);
         } else {
-            console.log('Connected to MySQL DB:', dbConnection.threadId);
+            console.log('Connected to db as id ' + dbConnection.threadId);
         }
     });
 
-    dbConnection.on('error', err => {
-        console.error('Database error:', err);
+    dbConnection.on('error', function(err) {
+        console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect(); // Reconnect on connection loss
+            handleDisconnect();
         } else {
             throw err;
         }
@@ -51,18 +50,18 @@ app.use(express.urlencoded({ extended: true }));
 app.post('/add-student', (req, res) => {
     const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
 
-    if (!studentId || !studentName || !semester || !phone_number || !email || !dob || !gender) {
-        return res.status(400).send('Missing required fields.');
+    if (studentId && studentName && semester && phone_number && email && dob && gender) {
+        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
+            if (error) {
+                console.error('Error inserting student data:', error);
+                return res.status(500).send('Error adding student.');
+            }
+            res.send('Student added successfully!');
+        });
+    } else {
+        res.status(400).send('Missing required fields.');
     }
-
-    const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
-        if (error) {
-            console.error('Error inserting student data:', error);
-            return res.status(500).send('Error adding student.');
-        }
-        res.send('Student added successfully!');
-    });
 });
 
 // Endpoint to get students by semester
@@ -96,7 +95,6 @@ app.delete('/delete-student/:studentId', (req, res) => {
     });
 });
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
