@@ -3,39 +3,39 @@ const mysql = require('mysql');
 const cors = require('cors');
 
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 
-// Enable CORS
+// Enable CORS for frontend access
 app.use(cors({
-    origin: 'https://bl-de.vercel.app', // Replace with your frontend URL
+    origin: '*', // Change this to your frontend URL if needed
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }));
 
-// MySQL connection and automatic reconnection
+// MySQL Database Connection (with Auto Reconnect)
 let dbConnection;
 function handleDisconnect() {
     dbConnection = mysql.createConnection({
-        host: 'sql10.freesqldatabase.com',
+        host: 'sql10.freesqldatabase.com',  
         user: 'sql10760370',
         password: 'GUeSnpUSjf',
         database: 'sql10760370',
         port: 3306
     });
 
-    dbConnection.connect(function(err) {
+    dbConnection.connect(function (err) {
         if (err) {
-            console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000); // Retry connection
+            console.error('❌ Database connection error:', err);
+            setTimeout(handleDisconnect, 2000);
         } else {
-            console.log('Connected to db as id ' + dbConnection.threadId);
+            console.log('✅ Connected to MySQL DB');
         }
     });
 
-    dbConnection.on('error', function(err) {
-        console.error('DB error: ', err);
+    dbConnection.on('error', function (err) {
+        console.error('⚠️ Database error:', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect(); // Reconnect if connection is lost
+            handleDisconnect();
         } else {
             throw err;
         }
@@ -43,60 +43,54 @@ function handleDisconnect() {
 }
 handleDisconnect();
 
-// Middleware to parse JSON and URL-encoded data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Support URL-encoded bodies
 
-// Endpoint to add a student
+// ➤ **Add Student**
 app.post('/add-student', (req, res) => {
     const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
-
-    if (studentId && studentName && semester && phone_number && email && dob && gender) {
-        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
-            if (error) {
-                console.error('Error inserting student data:', error);
-                return res.status(500).send('Error adding student.');
-            }
-            res.send('Student added successfully!');
-        });
-    } else {
-        res.status(400).send('Missing required fields.');
+    if (!studentId || !studentName || !semester || !phone_number || !email || !dob || !gender) {
+        return res.status(400).json({ error: 'All fields are required' });
     }
+
+    const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error) => {
+        if (error) {
+            console.error('❌ Error adding student:', error);
+            return res.status(500).json({ error: 'Database error while adding student' });
+        }
+        res.json({ message: '✅ Student added successfully!' });
+    });
 });
 
-// Endpoint to get students by semester
+// ➤ **Get Students by Semester**
 app.get('/students/:semester', (req, res) => {
-    const semester = req.params.semester;
-    const query = 'SELECT * FROM students WHERE semester = ?';
-
-    dbConnection.query(query, [semester], (error, results) => {
+    const { semester } = req.params;
+    dbConnection.query('SELECT * FROM students WHERE semester = ?', [semester], (error, results) => {
         if (error) {
-            console.error('Error fetching students:', error);
-            return res.status(500).send('Error fetching students.');
+            console.error('❌ Error fetching students:', error);
+            return res.status(500).json({ error: 'Database error while fetching students' });
         }
         res.json(results);
     });
 });
 
-// Endpoint to delete a student by studentId
+// ➤ **Delete Student**
 app.delete('/delete-student/:studentId', (req, res) => {
-    const studentId = req.params.studentId;
-    const query = 'DELETE FROM students WHERE studentId = ?';
-
-    dbConnection.query(query, [studentId], (error, results) => {
+    const { studentId } = req.params;
+    dbConnection.query('DELETE FROM students WHERE studentId = ?', [studentId], (error, results) => {
         if (error) {
-            console.error('Error deleting student:', error);
-            return res.status(500).send('Error deleting student.');
+            console.error('❌ Error deleting student:', error);
+            return res.status(500).json({ error: 'Database error while deleting student' });
         }
         if (results.affectedRows === 0) {
-            return res.status(404).send('Student not found.');
+            return res.status(404).json({ error: 'Student not found' });
         }
-        res.send('Student deleted successfully!');
+        res.json({ message: '✅ Student deleted successfully!' });
     });
 });
 
-// Start the server
+// ➤ **Start Server**
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`🚀 Server running on port ${port}`);
 });
