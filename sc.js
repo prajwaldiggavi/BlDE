@@ -1,67 +1,48 @@
 const express = require('express');
-const dbConnection = require('../db'); // Import database connection
+const dbConnection = require('../db'); // Import the database connection
 const router = express.Router();
 
-// ✅ Middleware to Set CORS Headers for Every Response
+// (Optional) Middleware to ensure CORS headers on these routes (if not handled globally)
 router.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://bl-de.vercel.app");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
+  res.header("Access-Control-Allow-Origin", "https://bl-de.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// Mark attendance
+router.post('/mark', (req, res) => {
+  const { studentId, date, status } = req.body;
+
+  if (!studentId || !date || !status) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+
+  const query = 'INSERT INTO attendance (studentId, date, status) VALUES (?, ?, ?)';
+  dbConnection.query(query, [studentId, date, status], (error, results) => {
+    if (error) {
+      console.error('Error marking attendance:', error);
+      return res.status(500).json({ error: 'Error marking attendance.' });
     }
-    
-    next();
+    res.json({ message: 'Attendance marked successfully!' });
+  });
 });
 
-// ✅ Add a student
-router.post('/add', (req, res) => {
-    const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
+// Get attendance by studentId
+router.get('/:studentId', (req, res) => {
+  const studentId = req.params.studentId;
+  const query = 'SELECT * FROM attendance WHERE studentId = ?';
 
-    if (studentId && studentName && semester && phone_number && email && dob && gender) {
-        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
-            if (error) {
-                console.error('Error inserting student data:', error);
-                return res.status(500).json({ error: 'Error adding student.' });
-            }
-            res.json({ message: 'Student added successfully!' });
-        });
-    } else {
-        res.status(400).json({ error: 'Missing required fields.' });
+  dbConnection.query(query, [studentId], (error, results) => {
+    if (error) {
+      console.error('Error fetching attendance:', error);
+      return res.status(500).json({ error: 'Error fetching attendance.' });
     }
-});
-
-// ✅ Get students by semester
-router.get('/:semester', (req, res) => {
-    const semester = req.params.semester;
-    const query = 'SELECT * FROM students WHERE semester = ?';
-
-    dbConnection.query(query, [semester], (error, results) => {
-        if (error) {
-            console.error('Error fetching students:', error);
-            return res.status(500).json({ error: 'Error fetching students.' });
-        }
-        res.json(results);
-    });
-});
-
-// ✅ Delete a student by studentId
-router.delete('/delete/:studentId', (req, res) => {
-    const studentId = req.params.studentId;
-    const query = 'DELETE FROM students WHERE studentId = ?';
-
-    dbConnection.query(query, [studentId], (error, results) => {
-        if (error) {
-            console.error('Error deleting student:', error);
-            return res.status(500).json({ error: 'Error deleting student.' });
-        }
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
-        res.json({ message: 'Student deleted successfully!' });
-    });
+    res.json(results);
+  });
 });
 
 module.exports = router;
