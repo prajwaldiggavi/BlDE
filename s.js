@@ -6,39 +6,29 @@ const attendanceRoutes = require('./routes/attendance');
 const app = express();
 const port = 8080;
 
-// ✅ Enable CORS for all responses
+// Enable CORS for all routes with specific options
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type']
+  origin: 'https://bl-de.vercel.app', // Allow your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// ✅ Global Middleware to Set Headers for All Responses
+// Optional: Global middleware to handle OPTIONS requests
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://bl-de.vercel.app");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
-    }
-    
-    next();
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
 });
 
+// Middleware to parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Use routes
+// Mount routes
 app.use('/students', studentRoutes);
 app.use('/attendance', attendanceRoutes);
 
-// ✅ Catch-all Route for 404 Errors
-app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found' });
-});
-
-// ✅ Start server
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
