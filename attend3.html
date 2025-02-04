@@ -532,17 +532,20 @@ async function fetchAttendance() {
 }
 
 // Toggle attendance status (Present/Absent)
+
 function toggleAttendance(button, isPresent) {
     const parentDiv = button.parentElement;
     const presentButton = parentDiv.querySelector(".present-btn");
     const absentButton = parentDiv.querySelector(".absent-btn");
 
     if (isPresent) {
-        presentButton.style.display = "none"; // Mark as present
+        presentButton.style.display = "none"; // Hide present button
         absentButton.style.display = "inline-block"; // Show absent button
+        absentButton.textContent = "Absent";  // Set status to Absent
     } else {
         presentButton.style.display = "inline-block"; // Show present button
         absentButton.style.display = "none"; // Hide absent button
+        presentButton.textContent = "Present";  // Set status to Present
     }
 }
 
