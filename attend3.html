@@ -328,12 +328,18 @@
             <button type="button" onclick="exportAttendance()">Export Attendance</button>
             
             <!-- Attendance Statistics Section -->
-            <div id="statsSection" class="stats">
-                <h3>Attendance Statistics</h3>
-                <p>Total Students: <span id="totalStudentsDisplay"></span></p>
-                <p>Present: <span id="presentCountDisplay"></span></p>
-                <p>Absent: <span id="absentCountDisplay"></span></p>
-            </div>
+            <div>
+    <h2>Attendance Stats</h2>
+    <p>Total Students: <span id="totalStudentsDisplay">0</span></p>
+    <p>Present: <span id="presentCountDisplay">0</span></p>
+    <p>Absent: <span id="absentCountDisplay">0</span></p>
+</div>
+
+<div>
+    <h2>Attendance Report</h2>
+    <p id="attendanceDetailsDisplay">No attendance records yet.</p>
+</div>
+
             
             <!-- Result Section -->
             <div id="resultSection" class="result-section">
