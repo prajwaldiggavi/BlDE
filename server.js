@@ -3,16 +3,16 @@ const mysql = require('mysql');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = 8080;
 
-// Enable CORS to allow frontend to communicate with the backend
+// Enable CORS
 app.use(cors({
-    origin: '*', // Allow all origins or replace '*' with specific frontend URL (e.g., 'https://yourfrontend.com')
+    origin: 'https://bl-de.vercel.app',
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type']
 }));
 
-// MySQL connection
+// MySQL connection and automatic reconnection
 let dbConnection;
 function handleDisconnect() {
     dbConnection = mysql.createConnection({
@@ -26,7 +26,7 @@ function handleDisconnect() {
     dbConnection.connect(function(err) {
         if (err) {
             console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000); // Retry connection after 2 seconds
+            setTimeout(handleDisconnect, 2000);
         } else {
             console.log('Connected to db as id ' + dbConnection.threadId);
         }
@@ -35,7 +35,7 @@ function handleDisconnect() {
     dbConnection.on('error', function(err) {
         console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect(); // Reconnect if connection is lost
+            handleDisconnect();
         } else {
             throw err;
         }
@@ -43,13 +43,13 @@ function handleDisconnect() {
 }
 handleDisconnect();
 
-// Parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Endpoint to add a student
 app.post('/add-student', (req, res) => {
     const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
+
     if (studentId && studentName && semester && phone_number && email && dob && gender) {
         const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
         dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
@@ -68,6 +68,7 @@ app.post('/add-student', (req, res) => {
 app.get('/students/:semester', (req, res) => {
     const semester = req.params.semester;
     const query = 'SELECT * FROM students WHERE semester = ?';
+
     dbConnection.query(query, [semester], (error, results) => {
         if (error) {
             console.error('Error fetching students:', error);
@@ -81,6 +82,7 @@ app.get('/students/:semester', (req, res) => {
 app.delete('/delete-student/:studentId', (req, res) => {
     const studentId = req.params.studentId;
     const query = 'DELETE FROM students WHERE studentId = ?';
+
     dbConnection.query(query, [studentId], (error, results) => {
         if (error) {
             console.error('Error deleting student:', error);
