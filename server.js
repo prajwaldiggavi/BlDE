@@ -144,6 +144,7 @@ app.post('/attendance', async (req, res) => {
 });
 
 // Endpoint to retrieve attendance for a student by roll_number and subjectName
+// Fetch the attendance records for a specific student and subject
 app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     const { roll_number, subjectName } = req.params;
 
@@ -168,6 +169,31 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance.' });
     }
 });
+
+// Fetch attendance statistics (Total Students, Present, Absent Count) for a subject and semester
+app.get('/attendance/stats/:semester/:subjectName', async (req, res) => {
+    const { semester, subjectName } = req.params;
+
+    try {
+        const totalStudentsQuery = 'SELECT COUNT(DISTINCT roll_number) as totalStudents FROM attendance WHERE semester = ? AND subjectName = ?';
+        const presentCountQuery = 'SELECT COUNT(*) as presentCount FROM attendance WHERE semester = ? AND subjectName = ? AND status = "Present"';
+        const absentCountQuery = 'SELECT COUNT(*) as absentCount FROM attendance WHERE semester = ? AND subjectName = ? AND status = "Absent"';
+
+        const totalStudents = await executeQuery(totalStudentsQuery, [semester, subjectName]);
+        const presentCount = await executeQuery(presentCountQuery, [semester, subjectName]);
+        const absentCount = await executeQuery(absentCountQuery, [semester, subjectName]);
+
+        res.json({
+            totalStudents: totalStudents[0].totalStudents,
+            presentCount: presentCount[0].presentCount,
+            absentCount: absentCount[0].absentCount
+        });
+    } catch (err) {
+        console.error('Error fetching attendance stats:', err);
+        res.status(500).json({ message: 'Error fetching attendance statistics.' });
+    }
+});
+
 
 // Start the server
 app.listen(port, () => {
