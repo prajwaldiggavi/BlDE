@@ -535,8 +535,8 @@ async function fetchAttendance() {
 
 function toggleAttendance(button, isPresent) {
     const parentDiv = button.parentElement;
-    const presentButton = parentDiv.querySelector(".present-btn");
-    const absentButton = parentDiv.querySelector(".absent-btn");
+    const absentButton = parentDiv.querySelector(".present-btn");
+    const presentButton  = parentDiv.querySelector(".absent-btn");
 
     if (isPresent) {
         presentButton.style.display = "none"; // Hide present button
