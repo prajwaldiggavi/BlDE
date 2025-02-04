@@ -100,89 +100,143 @@ app.delete('/delete-student/:studentId', async (req, res) => {
 });
 
 // Route to save or update attendance
-app.post('/attendance', async (req, res) => {
-    const { date, subjectName, attendance } = req.body;
-    if (!date || !subjectName || !attendance || attendance.length === 0) {
-        return res.status(400).json({ message: "Invalid or incomplete data provided." });
+async function fetchStudents() {
+    const semester = document.getElementById("classSelector").value;
+    const studentsList = document.getElementById("studentsList");
+    studentsList.innerHTML = ''; // Clear previous list
+
+    if (!semester) {
+        alert("Please select a semester.");
+        return;
     }
 
     try {
-        const rollNumbers = attendance.map(record => record.roll_number);
+        const response = await fetch(`${BACKEND_URL}/students/${semester}`);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-        // Save or update attendance records
-        await Promise.all(attendance.map(async (record) => {
-            const existingRecord = await executeQuery('SELECT id FROM attendance WHERE date = ? AND roll_number = ?', [date, record.roll_number]);
-            if (existingRecord.length > 0) {
-                return executeQuery('UPDATE attendance SET status = ?, subjectName = ? WHERE date = ? AND roll_number = ?',
-                    [record.status, subjectName, date, record.roll_number]);
-            } else {
-                return executeQuery('INSERT INTO attendance (date, roll_number, status, subjectName) VALUES (?, ?, ?, ?)',
-                    [date, record.roll_number, record.status, subjectName]);
-            }
-        }));
-
-        // Calculate present and absent counts
-        const presentCount = attendance.filter(record => record.status === 'present').length;
-        const absentCount = attendance.filter(record => record.status === 'absent').length;
-
-        // Fetch total attendance data
-        const totalAttendance = await executeQuery(
-            'SELECT COUNT(*) as total_students FROM students WHERE semester = (SELECT semester FROM attendance WHERE subjectName = ? LIMIT 1)',
-            [subjectName]
-        );
-
-        res.json({
-            message: 'Attendance saved successfully',
-            presentCount,
-            absentCount,
-            totalStudents: totalAttendance[0].total_students,
-            subjectName,
-            date
+        const students = await response.json();
+        students.forEach(student => {
+            const li = document.createElement('li');
+            li.innerHTML = `  
+                ${student.studentName} (ID: ${student.studentId})
+                <div class="student-actions">
+                    <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
+                    <button class="absent-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, false)">Absent</button>
+                </div>
+            `;
+            studentsList.appendChild(li);
         });
-    } catch (err) {
-        console.error('Error saving attendance:', err);
-        res.status(500).json({ message: 'Error saving attendance', error: err.message });
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        alert("Failed to fetch students.");
     }
-});
+}
 
-// Endpoint to retrieve total classes present and absent for a particular student by studentId and subjectName
-app.get('/attendance/:studentId/:subjectName', async (req, res) => {
-    const { studentId, subjectName } = req.params;
+// Submit attendance for the selected date and subject
+async function submitAttendance() {
+    const subjectName = document.getElementById("subjectName").value;
+    const dateInput = document.getElementById("attendanceDateInput").value;
+    const semester = document.getElementById("classSelector").value;
 
+    if (!subjectName || !dateInput || !semester) {
+        alert("Please fill all fields before submitting.");
+        return;
+    }
+
+    const studentsList = document.querySelectorAll("#studentsList li");
+    const attendance = [];
+
+    studentsList.forEach(studentItem => {
+        const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
+        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Present" : "Absent";
+        attendance.push({ roll_number: rollNumber, status: isPresent });
+    });
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/attendance`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ date: dateInput, subjectName, semester, attendance }),
+        });
+
+        if (!response.ok) throw new Error("Error saving attendance.");
+
+        alert("Attendance submitted successfully.");
+        updateAttendanceStats(semester, subjectName);
+        fetchAttendanceReport(semester, subjectName);
+    } catch (error) {
+        console.error("Error submitting attendance:", error);
+        alert("Failed to submit attendance.");
+    }
+}
+
+// Update attendance statistics after submitting
+async function updateAttendanceStats(semester, subjectName) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/attendance/stats/${semester}/${subjectName}`);
+        if (!response.ok) throw new Error(`Error fetching attendance statistics: ${response.status}`);
+
+        const stats = await response.json();
+        document.getElementById("totalStudentsDisplay").textContent = stats.totalStudents;
+        document.getElementById("presentCountDisplay").textContent = stats.presentCount;
+        document.getElementById("absentCountDisplay").textContent = stats.absentCount;
+    } catch (error) {
+        console.error("Error fetching attendance statistics:", error);
+        alert("Failed to fetch attendance statistics.");
+    }
+}
+
+// Fetch attendance for a specific student and subject
+async function fetchAttendanceReport(semester, subjectName) {
+    const studentId = document.getElementById("studentIdInput").value;
     if (!studentId || !subjectName) {
-        return res.status(400).json({ message: 'Student ID and Subject Name are required.' });
+        alert("Please enter both Student ID and Subject Name.");
+        return;
     }
 
     try {
-        // Fetch the attendance records for the given student and subject
-        const attendanceRecords = await executeQuery(
-            'SELECT date, status FROM attendance WHERE studentId = ? AND subjectName = ?',
-            [studentId, subjectName]
-        );
+        const response = await fetch(`${BACKEND_URL}/attendance/${studentId}/${subjectName}`);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
+        const attendanceRecords = await response.json();
         if (attendanceRecords.length === 0) {
-            return res.status(404).json({ message: 'No attendance records found for this student and subject.' });
+            document.getElementById("attendanceDetailsDisplay").innerHTML = "No attendance records found.";
+            return;
         }
 
-        // Calculate present and absent counts
-        const presentClasses = attendanceRecords.filter(record => record.status === 'present');
-        const absentClasses = attendanceRecords.filter(record => record.status === 'absent');
-
-        res.json({
-            studentId,
-            subjectName,
-            presentClasses: presentClasses.length,
-            absentClasses: absentClasses.length,
-            details: {
-                presentClasses: presentClasses,
-                absentClasses: absentClasses
-            }
+        let attendedClasses = 0;
+        let dates = [];
+        attendanceRecords.forEach(record => {
+            if (record.status === "Present") attendedClasses++;
+            dates.push(record.date);
         });
-    } catch (err) {
-        console.error('Error fetching attendance:', err);
-        res.status(500).json({ message: 'Error fetching attendance.' });
+
+        document.getElementById("attendanceDetailsDisplay").innerHTML = `
+            Student ID: ${studentId}<br>
+            Subject: ${subjectName}<br>
+            Classes Attended: ${attendedClasses}<br>
+            Dates: ${dates.join(', ')}
+        `;
+    } catch (error) {
+        console.error("Error fetching attendance:", error);
+        alert("Failed to fetch attendance.");
     }
-});
+}
+
+// Toggle attendance status (Present/Absent)
+function toggleAttendance(button, isPresent) {
+    const parentDiv = button.parentElement;
+    const presentButton = parentDiv.querySelector(".present-btn");
+    const absentButton = parentDiv.querySelector(".absent-btn");
+
+    if (isPresent) {
+        presentButton.style.display = "none"; // Mark as present
+        absentButton.style.display = "inline-block"; // Show absent button
+    } else {
+        presentButton.style.display = "inline-block"; // Show present button
+        absentButton.style.display = "none"; // Hide absent button
+    }
+}
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
