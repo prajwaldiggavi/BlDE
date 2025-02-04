@@ -532,19 +532,22 @@ async function fetchAttendance() {
 }
 
 // Toggle attendance status (Present/Absent)
-function toggleAttendance(button, isPresent) {
-    const parentDiv = button.parentElement;
-    const presentButton = parentDiv.querySelector(".present-btn");
-    const absentButton = parentDiv.querySelector(".absent-btn");
+// Toggle Present/Absent button
+function toggleStatus(event) {
+    const button = event.target;
+    const studentItem = button.closest("li");
+    const statusDisplay = studentItem.querySelector(".status-display");
 
-    if (isPresent) {
-        presentButton.style.display = "none"; // Mark as present
-        absentButton.style.display = "inline-block"; // Show absent button
+    // Toggle between Present and Absent
+    if (button.style.display === "none") {
+        button.style.display = "inline-block";  // Show Present button
+        statusDisplay.textContent = "Absent";  // Set status as Absent
     } else {
-        presentButton.style.display = "inline-block"; // Show present button
-        absentButton.style.display = "none"; // Hide absent button
+        button.style.display = "none";  // Show Absent button
+        statusDisplay.textContent = "Present";  // Set status as Present
     }
 }
+
 </script>
 
 
