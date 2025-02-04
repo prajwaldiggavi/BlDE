@@ -170,18 +170,18 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     }
 });
 
-// Fetch attendance statistics (Total Students, Present, Absent Count) for a subject and semester
-app.get('/attendance/stats/:semester/:subjectName', async (req, res) => {
-    const { semester, subjectName } = req.params;
+app.get('/attendance/stats/:semester/:subjectName/:date', async (req, res) => {
+    const { semester, subjectName, date } = req.params;
 
     try {
-        const totalStudentsQuery = 'SELECT COUNT(DISTINCT roll_number) as totalStudents FROM attendance WHERE semester = ? AND subjectName = ?';
-        const presentCountQuery = 'SELECT COUNT(*) as presentCount FROM attendance WHERE semester = ? AND subjectName = ? AND status = "Present"';
-        const absentCountQuery = 'SELECT COUNT(*) as absentCount FROM attendance WHERE semester = ? AND subjectName = ? AND status = "Absent"';
+        // Query for total students, present count, and absent count on a specific date
+        const totalStudentsQuery = 'SELECT COUNT(DISTINCT roll_number) as totalStudents FROM attendance WHERE semester = ? AND subjectName = ? AND date = ?';
+        const presentCountQuery = 'SELECT COUNT(*) as presentCount FROM attendance WHERE semester = ? AND subjectName = ? AND date = ? AND status = "Present"';
+        const absentCountQuery = 'SELECT COUNT(*) as absentCount FROM attendance WHERE semester = ? AND subjectName = ? AND date = ? AND status = "Absent"';
 
-        const totalStudents = await executeQuery(totalStudentsQuery, [semester, subjectName]);
-        const presentCount = await executeQuery(presentCountQuery, [semester, subjectName]);
-        const absentCount = await executeQuery(absentCountQuery, [semester, subjectName]);
+        const totalStudents = await executeQuery(totalStudentsQuery, [semester, subjectName, date]);
+        const presentCount = await executeQuery(presentCountQuery, [semester, subjectName, date]);
+        const absentCount = await executeQuery(absentCountQuery, [semester, subjectName, date]);
 
         res.json({
             totalStudents: totalStudents[0].totalStudents,
@@ -193,6 +193,7 @@ app.get('/attendance/stats/:semester/:subjectName', async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance statistics.' });
     }
 });
+
 
 // Start the server
 app.listen(port, () => {
