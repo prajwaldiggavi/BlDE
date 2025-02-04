@@ -100,7 +100,6 @@ app.delete('/delete-student/:studentId', async (req, res) => {
 });
 
 // Route to save or update attendance
-// Route to save or update attendance and display present/absent counts
 app.post('/attendance', async (req, res) => {
     const { date, subjectName, attendance } = req.body;
     if (!date || !subjectName || !attendance || attendance.length === 0) {
@@ -126,10 +125,19 @@ app.post('/attendance', async (req, res) => {
         const presentCount = attendance.filter(record => record.status === 'present').length;
         const absentCount = attendance.filter(record => record.status === 'absent').length;
 
+        // Fetch total attendance data
+        const totalAttendance = await executeQuery(
+            'SELECT COUNT(*) as total_students FROM students WHERE semester = (SELECT semester FROM attendance WHERE subjectName = ? LIMIT 1)',
+            [subjectName]
+        );
+
         res.json({
             message: 'Attendance saved successfully',
             presentCount,
-            absentCount
+            absentCount,
+            totalStudents: totalAttendance[0].total_students,
+            subjectName,
+            date
         });
     } catch (err) {
         console.error('Error saving attendance:', err);
@@ -175,9 +183,6 @@ app.get('/attendance/:studentId/:subjectName', async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance.' });
     }
 });
-
-
-
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
