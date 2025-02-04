@@ -101,51 +101,66 @@ app.delete('/delete-student/:studentId', async (req, res) => {
 });
 
 // Route to save or update attendance
+// Route to save or update attendance and generate attendance report
 app.post('/attendance', async (req, res) => {
-    const { date, subjectName, attendance } = req.body;
-    if (!date || !subjectName || !attendance || attendance.length === 0) {
+    const { date, subjectName, semester, attendance } = req.body;
+    if (!date || !subjectName || !semester || !attendance || attendance.length === 0) {
         return res.status(400).json({ message: "Invalid or incomplete data provided." });
     }
 
     try {
-        const rollNumbers = attendance.map(record => record.roll_number);
-
         // Save or update attendance records
         await Promise.all(attendance.map(async (record) => {
-            const existingRecord = await executeQuery('SELECT id FROM attendance WHERE date = ? AND roll_number = ?', [date, record.roll_number]);
+            const existingRecord = await executeQuery('SELECT id FROM attendance WHERE date = ? AND roll_number = ? AND subjectName = ?',
+                [date, record.roll_number, subjectName]);
+            
             if (existingRecord.length > 0) {
-                return executeQuery('UPDATE attendance SET status = ?, subjectName = ? WHERE date = ? AND roll_number = ?',
-                    [record.status, subjectName, date, record.roll_number]);
+                // Update attendance record if it exists
+                return executeQuery('UPDATE attendance SET status = ?, semester = ? WHERE date = ? AND roll_number = ? AND subjectName = ?',
+                    [record.status, semester, date, record.roll_number, subjectName]);
             } else {
-                return executeQuery('INSERT INTO attendance (date, roll_number, status, subjectName) VALUES (?, ?, ?, ?)',
-                    [date, record.roll_number, record.status, subjectName]);
+                // Insert new attendance record if it doesn't exist
+                return executeQuery('INSERT INTO attendance (date, roll_number, status, subjectName, semester) VALUES (?, ?, ?, ?, ?)',
+                    [date, record.roll_number, record.status, subjectName, semester]);
             }
         }));
 
-        res.json({ message: 'Attendance saved successfully' });
+        // Generate attendance report
+        const totalStudents = attendance.length;
+        const presentCount = attendance.filter(record => record.status === 'Present').length;
+        const absentCount = totalStudents - presentCount;
+
+        res.json({
+            message: 'Attendance saved successfully',
+            report: {
+                totalStudents,
+                presentCount,
+                absentCount
+            }
+        });
     } catch (err) {
         console.error('Error saving attendance:', err);
         res.status(500).json({ message: 'Error saving attendance', error: err.message });
     }
 });
-// Route to fetch attendance based on semester and date
-// Endpoint to retrieve attendance for a student by studentId and subjectName
-app.get('/attendance/:studentId/:subjectName', async (req, res) => {
-    const { studentId, subjectName } = req.params;
 
-    if (!studentId || !subjectName) {
-        return res.status(400).json({ message: 'Student ID and Subject Name are required.' });
+// Endpoint to retrieve attendance for a student by roll_number and subjectName
+app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
+    const { roll_number, subjectName } = req.params;
+
+    if (!roll_number || !subjectName) {
+        return res.status(400).json({ message: 'Roll number and Subject Name are required.' });
     }
 
     try {
-        // Fetch the attendance records for the given student and subject
+        // Fetch the attendance records for the given roll_number and subjectName
         const attendanceRecords = await executeQuery(
-            'SELECT date, status FROM attendance WHERE studentId = ? AND subjectName = ?',
-            [studentId, subjectName]
+            'SELECT date, status, semester FROM attendance WHERE roll_number = ? AND subjectName = ?',
+            [roll_number, subjectName]
         );
 
         if (attendanceRecords.length === 0) {
-            return res.status(404).json({ message: 'No attendance records found for this student and subject.' });
+            return res.status(404).json({ message: 'No attendance records found for this roll number and subject.' });
         }
 
         res.json(attendanceRecords);
@@ -153,6 +168,8 @@ app.get('/attendance/:studentId/:subjectName', async (req, res) => {
         console.error('Error fetching attendance:', err);
         res.status(500).json({ message: 'Error fetching attendance.' });
     }
+});
+
 });
 
 
