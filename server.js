@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const port = 8080;
@@ -23,7 +24,7 @@ function handleDisconnect() {
         port: 3306
     });
 
-    dbConnection.connect(function(err) {
+    dbConnection.connect(err => {
         if (err) {
             console.error('Error connecting to db: ' + err.stack);
             setTimeout(handleDisconnect, 2000);
@@ -32,7 +33,7 @@ function handleDisconnect() {
         }
     });
 
-    dbConnection.on('error', function(err) {
+    dbConnection.on('error', err => {
         console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
             handleDisconnect();
@@ -46,53 +47,107 @@ handleDisconnect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Email Configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'diggaviprajwal55@gmail.com',
+        pass: 'bgnm kbga xkew pgpb' // Use your Google App Password
+    }
+});
+
+// Helper Function: Execute MySQL Queries
+const executeQuery = (query, params) => {
+    return new Promise((resolve, reject) => {
+        dbConnection.query(query, params, (err, results) => {
+            if (err) reject(err);
+            else resolve(results);
+        });
+    });
+};
+
 // Endpoint to add a student
-app.post('/add-student', (req, res) => {
+app.post('/add-student', async (req, res) => {
     const { studentId, studentName, semester, phone_number, email, dob, gender } = req.body;
 
-    if (studentId && studentName && semester && phone_number && email && dob && gender) {
-        const query = 'INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        dbConnection.query(query, [studentId, studentName, semester, phone_number, email, dob, gender], (error, results) => {
-            if (error) {
-                console.error('Error inserting student data:', error);
-                return res.status(500).send('Error adding student.');
-            }
-            res.send('Student added successfully!');
-        });
-    } else {
-        res.status(400).send('Missing required fields.');
+    if (!studentId || !studentName || !semester || !phone_number || !email || !dob || !gender) {
+        return res.status(400).send('Missing required fields.');
+    }
+
+    try {
+        await executeQuery('INSERT INTO students (studentId, studentName, semester, phone_number, email, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [studentId, studentName, semester, phone_number, email, dob, gender]);
+        res.send('Student added successfully!');
+    } catch (error) {
+        console.error('Error inserting student data:', error);
+        res.status(500).send('Error adding student.');
     }
 });
 
 // Endpoint to get students by semester
-app.get('/students/:semester', (req, res) => {
-    const semester = req.params.semester;
-    const query = 'SELECT * FROM students WHERE semester = ?';
-
-    dbConnection.query(query, [semester], (error, results) => {
-        if (error) {
-            console.error('Error fetching students:', error);
-            return res.status(500).send('Error fetching students.');
-        }
+app.get('/students/:semester', async (req, res) => {
+    try {
+        const results = await executeQuery('SELECT * FROM students WHERE semester = ?', [req.params.semester]);
         res.json(results);
-    });
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        res.status(500).send('Error fetching students.');
+    }
 });
 
 // Endpoint to delete a student by studentId
-app.delete('/delete-student/:studentId', (req, res) => {
-    const studentId = req.params.studentId;
-    const query = 'DELETE FROM students WHERE studentId = ?';
-
-    dbConnection.query(query, [studentId], (error, results) => {
-        if (error) {
-            console.error('Error deleting student:', error);
-            return res.status(500).send('Error deleting student.');
-        }
+app.delete('/delete-student/:studentId', async (req, res) => {
+    try {
+        const results = await executeQuery('DELETE FROM students WHERE studentId = ?', [req.params.studentId]);
         if (results.affectedRows === 0) {
             return res.status(404).send('Student not found.');
         }
         res.send('Student deleted successfully!');
-    });
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        res.status(500).send('Error deleting student.');
+    }
+});
+
+// Route to save or update attendance and send email notifications
+app.post('/attendance', async (req, res) => {
+    const { date, subjectName, attendance } = req.body;
+    if (!date || !subjectName || !attendance || attendance.length === 0) {
+        return res.status(400).json({ message: "Invalid or incomplete data provided." });
+    }
+
+    try {
+        const rollNumbers = attendance.map(record => record.roll_number);
+
+        // Save or update attendance records
+        await Promise.all(attendance.map(async (record) => {
+            const existingRecord = await executeQuery('SELECT id FROM attendance WHERE date = ? AND roll_number = ?', [date, record.roll_number]);
+            if (existingRecord.length > 0) {
+                return executeQuery('UPDATE attendance SET status = ?, subjectName = ? WHERE date = ? AND roll_number = ?',
+                    [record.status, subjectName, date, record.roll_number]);
+            } else {
+                return executeQuery('INSERT INTO attendance (date, roll_number, status, subjectName) VALUES (?, ?, ?, ?)',
+                    [date, record.roll_number, record.status, subjectName]);
+            }
+        }));
+
+        // Fetch students and send email notifications
+        const students = await executeQuery('SELECT email, studentName, studentId FROM students WHERE studentId IN (?)', [rollNumbers]);
+        await Promise.all(students.map(student => {
+            const mailOptions = {
+                from: 'diggaviprajwal55@gmail.com',
+                to: student.email,
+                subject: 'Attendance Status',
+                text: `Dear ${student.studentName},\n\nYour attendance has been updated for ${subjectName} on ${date}.\n\nRegards,\nDEPT OF ISE BLDEACET`
+            };
+            return transporter.sendMail(mailOptions);
+        }));
+
+        res.json({ message: 'Attendance saved and emails sent successfully' });
+    } catch (err) {
+        console.error('Error saving attendance:', err);
+        res.status(500).json({ message: 'Error saving attendance', error: err.message });
+    }
 });
 
 app.listen(port, () => {
