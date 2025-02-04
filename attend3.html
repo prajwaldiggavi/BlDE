@@ -532,21 +532,17 @@ async function fetchAttendance() {
 }
 
 // Toggle attendance status (Present/Absent)
-// Toggle Present/Absent button
-function toggleStatus(event) {
-    const button = event.target;
-    const studentItem = button.closest("li");
-    const statusDisplay = studentItem.querySelector(".status-display");
+function toggleAttendance(button, isPresent) {
+    const parentDiv = button.parentElement;
+    const presentButton = parentDiv.querySelector(".present-btn");
+    const absentButton = parentDiv.querySelector(".absent-btn");
 
-    // Toggle the button text and status using a data attribute or class
-    if (button.textContent === "Present") {
-        button.textContent = "Absent";  // Change button text to Absent
-        statusDisplay.textContent = "Absent";  // Set status as Absent
-        button.style.backgroundColor = "red";  // Optional: Change button color for absent
+    if (isPresent) {
+        presentButton.style.display = "none"; // Mark as present
+        absentButton.style.display = "inline-block"; // Show absent button
     } else {
-        button.textContent = "Present";  // Change button text to Present
-        statusDisplay.textContent = "Present";  // Set status as Present
-        button.style.backgroundColor = "green";  // Optional: Change button color for present
+        presentButton.style.display = "inline-block"; // Show present button
+        absentButton.style.display = "none"; // Hide absent button
     }
 }
 
