@@ -400,7 +400,6 @@ async function fetchStudents() {
 }
 
 // Submit attendance for the selected date and subject
-// Submit attendance for the selected date and subject
 async function submitAttendance() {
     const subjectName = document.getElementById("subjectName").value;
     const dateInput = document.getElementById("attendanceDateInput").value;
@@ -416,10 +415,7 @@ async function submitAttendance() {
 
     studentsList.forEach(studentItem => {
         const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
-
-        // Fix here: Check if the "Present" button is hidden (indicating the student is absent)
-        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Absent" : "Present";
-        
+        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Present" : "Absent";
         attendance.push({ roll_number: rollNumber, status: isPresent });
     });
 
@@ -433,13 +429,11 @@ async function submitAttendance() {
         if (!response.ok) throw new Error("Error saving attendance.");
 
         alert("Attendance submitted successfully.");
-        updateAttendanceStats(semester, subjectName, dateInput);
+        updateAttendanceStats(semester, subjectName);
     } catch (error) {
         console.error("Error submitting attendance:", error);
         alert("Failed to submit attendance.");
     }
-}
-}
 }
 
 // Update attendance statistics (Total Students, Present Count, Absent Count)
