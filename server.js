@@ -111,16 +111,16 @@ app.post('/attendance', async (req, res) => {
         // Save or update attendance records
         await Promise.all(attendance.map(async (record) => {
             const existingRecord = await executeQuery('SELECT id FROM attendance WHERE date = ? AND roll_number = ? AND subjectName = ?',
-                [date, record.roll_number, subjectName]);
+                [date, record.studentName, subjectName]);
             
             if (existingRecord.length > 0) {
                 // Update attendance record if it exists
                 return executeQuery('UPDATE attendance SET status = ?, semester = ? WHERE date = ? AND roll_number = ? AND subjectName = ?',
-                    [record.status, semester, date, record.roll_number, subjectName]);
+                    [record.status, semester, date, record.studentName, subjectName]);
             } else {
                 // Insert new attendance record if it doesn't exist
                 return executeQuery('INSERT INTO attendance (date, roll_number, status, subjectName, semester) VALUES (?, ?, ?, ?, ?)',
-                    [date, record.roll_number, record.status, subjectName, semester]);
+                    [date, record.studentName, record.status, subjectName, semester]);
             }
         }));
 
@@ -142,6 +142,7 @@ app.post('/attendance', async (req, res) => {
         res.status(500).json({ message: 'Error saving attendance', error: err.message });
     }
 });
+
 
 // Endpoint to retrieve attendance for a student by roll_number and subjectName
 // Fetch the attendance records for a specific student and subject
