@@ -127,6 +127,26 @@ app.post('/attendance', async (req, res) => {
         res.status(500).json({ message: 'Error saving attendance', error: err.message });
     }
 });
+// Route to fetch attendance based on semester and date
+app.get('/attendance/:semester/:date', async (req, res) => {
+    const { semester, date } = req.params;
+
+    if (!semester || !date) {
+        return res.status(400).json({ message: 'Semester and Date are required.' });
+    }
+
+    try {
+        // Fetch attendance for the given semester and date
+        const attendanceRecords = await executeQuery('SELECT * FROM attendance WHERE date = ? AND semester = ?', [date, semester]);
+        
+        // Return the attendance records
+        res.json(attendanceRecords);
+    } catch (err) {
+        console.error('Error fetching attendance:', err);
+        res.status(500).json({ message: 'Error fetching attendance', error: err.message });
+    }
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
