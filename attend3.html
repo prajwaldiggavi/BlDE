@@ -362,7 +362,6 @@
                 <h3>Attendance Details</h3>
                 <p id="attendanceDetailsDisplay">Student ID: undefined<br>Subject: undefined<br>Classes Attended: undefined<br>Dates: undefined</p>
             </div>
-        </div>
 <script>
 const BACKEND_URL = "https://blde-production.up.railway.app"; // Replace with your Railway backend URL
 
@@ -429,46 +428,6 @@ async function submitAttendance() {
         if (!response.ok) throw new Error("Error saving attendance.");
 
         alert("Attendance submitted successfully.");
-        updateAttendanceStats(semester, subjectName);
-    } catch (error) {
-        console.error("Error submitting attendance:", error);
-        alert("Failed to submit attendance.");
-    }
-}
-
-// Update attendance statistics (Total Students, Present Count, Absent Count)
-// Submit attendance for the selected date and subject
-async function submitAttendance() {
-    const subjectName = document.getElementById("subjectName").value;
-    const dateInput = document.getElementById("attendanceDateInput").value;
-    const semester = document.getElementById("classSelector").value;
-
-    if (!subjectName || !dateInput || !semester) {
-        alert("Please fill all fields before submitting.");
-        return;
-    }
-
-    const studentsList = document.querySelectorAll("#studentsList li");
-    const attendance = [];
-
-    studentsList.forEach(studentItem => {
-        const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
-        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Present" : "Absent";
-        attendance.push({ roll_number: rollNumber, status: isPresent });
-    });
-
-    try {
-        const response = await fetch(`${BACKEND_URL}/attendance`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ date: dateInput, subjectName, semester, attendance }),
-        });
-
-        if (!response.ok) throw new Error("Error saving attendance.");
-
-        alert("Attendance submitted successfully.");
-
-        // Fetch and display the updated statistics for this specific session
         updateAttendanceStats(semester, subjectName, dateInput);
     } catch (error) {
         console.error("Error submitting attendance:", error);
@@ -532,11 +491,10 @@ async function fetchAttendance() {
 }
 
 // Toggle attendance status (Present/Absent)
-
 function toggleAttendance(button, isPresent) {
     const parentDiv = button.parentElement;
     const presentButton = parentDiv.querySelector(".present-btn");
-    const absentButton   = parentDiv.querySelector(".absent-btn");
+    const absentButton = parentDiv.querySelector(".absent-btn");
 
     if (isPresent) {
         presentButton.style.display = "none"; // Hide present button
@@ -548,9 +506,7 @@ function toggleAttendance(button, isPresent) {
         presentButton.textContent = "Present";  // Set status to Present
     }
 }
-
 </script>
-
 
     </body>
     
