@@ -384,7 +384,7 @@ async function fetchStudents() {
         const students = await response.json();
         students.forEach(student => {
             const li = document.createElement('li');
-            li.innerHTML = `
+            li.innerHTML = `    
                 ${student.studentName} (ID: ${student.studentId})
                 <div class="student-actions">
                     <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
@@ -436,7 +436,7 @@ async function submitAttendance() {
     }
 }
 
-// Update attendance statistics
+// Update attendance statistics (Total Students, Present Count, Absent Count)
 async function updateAttendanceStats(semester, subjectName) {
     try {
         const response = await fetch(`${BACKEND_URL}/attendance/stats/${semester}/${subjectName}`);
@@ -505,7 +505,6 @@ function toggleAttendance(button, isPresent) {
         absentButton.style.display = "none"; // Hide absent button
     }
 }
-
 </script>
 
 
