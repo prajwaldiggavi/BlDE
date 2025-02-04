@@ -1,119 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>BLDEACET| Faculty</title>
+    <!--Style Starts-->
+    <link rel="icon" type="image/png" href="img/IIITV_Logo_1x1_small.png">
+    <link href='https://fonts.googleapis.com/css?family=Oxygen:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="n.css">
+    <style>
+        .faculty-photo {
+            max-width: 100%;
+            max-height: 150px; /* Adjust height as needed */
+            height: auto;
+            border-radius: 50%; /* Optional: makes images circular */
+        }
+    </style>
 </head>
+
 <body>
+    <!-- Start Your Body Code From here -->
+    <div class="wrapper">
+        <!-- header starts here -->
+        <header id="header" class="">
+            <div class="header-wrapper">
+                <div class="header-container">
+                    <div>
+                        <div class="logo-name">
+                            <div class="logo"><a href="index.html" title=""><img src="https://github.com/prajwaldiggavi/BlDE/blob/image/BLD.png?raw=true"
+                                                                                 alt="logo"></a></div>
+                            <div class="name">
+                                <a href="index.html" title="">
+                                    <h5>DEPARTMENT OF INFORMATION SCIENCE AND ENGINEERING</h5>
+                                    <h5 class="primary-color">BLDEACET</h5>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-links">
+                        <a href="https://www.google.com/maps?ll=16.847732,75.718501&z=17&t=m&hl=en&gl=IN&mapclient=embed&cid=6385882878560726955" target="_blank" title="Open in Google Maps">
+                            <i class="fa fa-map-marker fa-lg" style="color: #FF5733;" aria-hidden="true"></i>
+                        </a>
+                    
+                        <a href="#" data-toggle="popover" title="Phone No." data-content="+91-79-29750281"
+                           data-placement="bottom"><i class="fa fa-phone fa-lg" aria-hidden="true"></i></a>
+                           <a href="https://www.youtube.com/@bldeacetmedia7621" target="_blank" title="YouTube">
+                            <i class="fa fa-youtube fa-lg" style="color: #FF0000;" aria-hidden="true"></i>
+                        </a>
+                    
+                        <a href="https://www.instagram.com/bldeacetmedia/" target="_blank" title="Instagram">
+                            <i class="fa fa-instagram fa-lg" style="color: #C13584;" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://x.com/i/flow/login?redirect_after_login=%2Fbldeacet" target="_blank" title="Twitter">
+                            <i class="fa fa-twitter fa-lg" style="color: #1DA1F2;" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <nav>
+                <nav>
+                    <div class="navbar navbar-inverse navbar-custom" role="navigation">
+                        <div class="container">
+                            <div class="navbar-header">
+                                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                                    <span class="sr-only">Toggle navigation</span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                </button>
+                            </div>
+                            <div class="collapse navbar-collapse">
+                                <ul class="nav navbar-nav">
+                                    <li><a href="student_details.html">Student Details Entry</a></li>
+                                    <li><a href="faculty.html">Faculty</a></li>
+                                    <li><a href="attend2.html">Attendance</a></li> 
+                                    <li><a href="marks_entry.html">Marks Entry</a></li> 
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+        </header>
+        <div class="container">
+            <h2>Student Attendance Portal</h2>
+            
+            <!-- Subject Name Input -->
+            <label for="subjectName">Subject Name:</label>
+            <input type="text" id="subjectName" placeholder="Enter subject name" required>
+            
+            <!-- Semester Selector -->
+            <label for="classSelector">Semester:</label>
+            <select id="classSelector" onchange="fetchStudents()">
+                <option value="">Select Semester</option>
+                <option value="1">1st Semester</option>
+                <option value="2">2nd Semester</option>
+                <option value="3">3rd Semester</option>
+                <option value="4">4th Semester</option>
+                <option value="5">5th Semester</option>
+                <option value="6">6th Semester</option>
+                <option value="7">7th Semester</option>
+                <option value="8">8th Semester</option>
+            </select>
+            
+            <!-- Student List -->
+            <h3>Student List</h3>
+            <ul id="studentsList"></ul>
+            
+            <!-- Attendance Date Input -->
+            <label for="attendanceDate">Attendance Date:</label>
+            <input type="date" id="attendanceDateInput" required>
+            
+            <!-- Submit and Export Buttons -->
+            <button type="submit" onclick="submitAttendance()">Submit Attendance</button>
+            <button type="button" onclick="exportAttendance()">Export Attendance</button>
+            
+            <!-- Attendance Statistics Section -->
+            <div>
+    <h2>Attendance Stats</h2>
+    <p>Total Students: <span id="totalStudentsDisplay">0</span></p>
+    <p>Present: <span id="presentCountDisplay">0</span></p>
+    <p>Absent: <span id="absentCountDisplay">0</span></p>
+</div>
 
-    <h1>Student Management System</h1>
+<div>
+    <h2>Attendance Report</h2>
+    <p id="attendanceDetailsDisplay">No attendance records yet.</p>
+</div>
 
-    <!-- Add Student Form -->
-    <form id="studentForm">
-        <input type="text" id="studentId" placeholder="Student ID" required><br>
-        <input type="text" id="studentName" placeholder="Student Name" required><br>
-        <input type="text" id="semester" placeholder="Semester" required><br>
-        <input type="text" id="phone_number" placeholder="Phone Number" required><br>
-        <input type="email" id="email" placeholder="Email" required><br>
-        <input type="date" id="dob" placeholder="Date of Birth" required><br>
-        <select id="gender" required>
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-        </select><br>
-        <button type="button" onclick="addStudent()">Add Student</button>
-    </form>
+            <!-- Result Section -->
+            <div id="resultSection" class="result-section">
+                <h3>Attendance Result</h3>
+                <p>Date: <span id="attendanceDateDisplay"></span></p>
+                <p>Time: <span id="attendanceTimeDisplay"></span></p>
+            </div>
+            
+            <!-- Retrieve Attendance Section -->
+            <h3>Retrieve Attendance</h3>
+            <label for="studentIdInput">Student ID:</label>
+            <input type="text" id="studentIdInput" placeholder="Enter Student ID" required>
+            
+            <label for="subjectNameRetrieve">Subject Name:</label>
+            <input type="text" id="subjectNameRetrieve" placeholder="Enter Subject Name" required>
+            
+            <button type="button" onclick="fetchAttendance()">Fetch Attendance</button>
+            
+            <div id="attendanceDetail" class="attendance-detail">
+                <h3>Attendance Details</h3>
+                <p id="attendanceDetailsDisplay">Student ID: undefined<br>Subject: undefined<br>Classes Attended: undefined<br>Dates: undefined</p>
+            </div>
+        </div>
 
-    <!-- Show Students by Semester -->
-    <h2>View Students by Semester</h2>
-    <input type="text" id="showSemester" placeholder="Enter Semester">
-    <button type="button" onclick="showStudents()">Show Students</button>
+<script>
+const BACKEND_URL = "https://blde-production.up.railway.app"; // Replace with your Railway backend URL
 
-    <table id="studentList" border="1">
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Student Name</th>
-                <th>Semester</th>
-                <th>Phone Number</th>
-                <th>Email</th>
-                <th>Date of Birth</th>
-                <th>Gender</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+// Fetch students based on the selected semester
+async function fetchStudents() {
+    const semester = document.getElementById("classSelector").value;
+    const studentsList = document.getElementById("studentsList");
+    studentsList.innerHTML = ''; // Clear previous list
 
-    <script>
-        const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway app URL
+    if (!semester) {
+        alert("Please select a semester.");
+        return;
+    }
 
-        function addStudent() {
-            const studentId = $('#studentId').val();
-            const studentName = $('#studentName').val();
-            const semester = $('#semester').val();
-            const phone_number = $('#phone_number').val();
-            const email = $('#email').val();
-            const dob = $('#dob').val();
-            const gender = $('#gender').val();
+    try {
+        const response = await fetch(`${BACKEND_URL}/students/${semester}`);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-            if (studentId && studentName && semester && phone_number && email && dob && gender) {
-                $.ajax({
-                    url: `${serverUrl}/add-student`,
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ studentId, studentName, semester, phone_number, email, dob, gender }),
-                    success: function(response) {
-                        alert(response);
-                        $('#studentForm')[0].reset(); // Clear the form
-                    },
-                    error: function(error) {
-                        alert('Error: ' + error.responseText);
-                    }
-                });
-            } else {
-                alert('Please fill out all required fields.');
-            }
+        const students = await response.json();
+        students.forEach(student => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${student.studentName} (ID: ${student.studentId})
+                <div class="student-actions">
+                    <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
+                    <button class="absent-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, false)">Absent</button>
+                </div>
+            `;
+            studentsList.appendChild(li);
+        });
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        alert("Failed to fetch students.");
+    }
+}
+
+// Submit attendance for the selected date and subject
+async function submitAttendance() {
+    const subjectName = document.getElementById("subjectName").value;
+    const dateInput = document.getElementById("attendanceDateInput").value;
+    const semester = document.getElementById("classSelector").value;
+
+    if (!subjectName || !dateInput || !semester) {
+        alert("Please provide subject name, semester, and attendance date.");
+        return;
+    }
+
+    const attendanceData = {
+        subjectName: subjectName,
+        date: dateInput,
+        semester: semester,
+        attendance: [] // Collect attendance data (Present/Absent)
+    };
+
+    const studentIds = document.querySelectorAll('.student-actions button');
+    studentIds.forEach(button => {
+        const studentId = button.dataset.roll;
+        const isPresent = button.classList.contains('present-btn');
+        attendanceData.attendance.push({ studentId, isPresent });
+    });
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/attendance`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(attendanceData),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert(`Attendance for ${subjectName} on ${dateInput} has been submitted!`);
+        } else {
+            const error = await response.json();
+            alert(`Error: ${error.message}`);
         }
+    } catch (error) {
+        console.error("Error submitting attendance:", error);
+        alert("Failed to submit attendance.");
+    }
+}
 
-        function showStudents() {
-            const semester = $('#showSemester').val();
+// Fetch attendance for the specified student and subject
+async function fetchAttendance() {
+    const studentId = document.getElementById("studentIdInput").value;
+    const subjectName = document.getElementById("subjectNameRetrieve").value;
 
-            if (semester) {
-                $.ajax({
-                    url: `${serverUrl}/students/${semester}`,
-                    type: 'GET',
-                    success: function(students) {
-                        $('#studentList tbody').empty();  // Clear previous list
-                        if (students.length > 0) {
-                            students.forEach(student => {
-                                $('#studentList tbody').append(`
-                                    <tr>
-                                        <td>${student.studentId}</td>
-                                        <td>${student.studentName}</td>
-                                        <td>${student.semester}</td>
-                                        <td>${student.phone_number}</td>
-                                        <td>${student.email}</td>
-                                        <td>${student.dob}</td>
-                                        <td>${student.gender}</td>
-                                    </tr>
-                                `);
-                            });
-                        } else {
-                            $('#studentList tbody').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
-                        }
-                    },
-                    error: function(error) {
-                        alert('Error: ' + error.responseText);
-                    }
-                });
-            } else {
-                alert('Please select a semester.');
-            }
-        }
-    </script>
+    if (!studentId || !subjectName) {
+        alert("Please provide both student ID and subject name.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/attendance/${studentId}/${subjectName}`);
+        if (!response.ok) throw new Error(`Error fetching attendance: ${response.status}`);
+
+        const data = await response.json();
+        document.getElementById("attendanceDetailsDisplay").innerHTML = `
+            Student ID: ${data.studentId}<br>
+            Subject: ${data.subjectName}<br>
+            Classes Attended: ${data.classesAttended}<br>
+            Dates: ${data.dates.join(", ")}
+        `;
+    } catch (error) {
+        console.error("Error fetching attendance:", error);
+        alert("Failed to fetch attendance.");
+    }
+}
+
+// Export attendance records (mock)
+function exportAttendance() {
+    alert("Export functionality coming soon.");
+}
+</script>
 
 </body>
 </html>
