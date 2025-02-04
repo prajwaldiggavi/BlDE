@@ -100,6 +100,7 @@ app.delete('/delete-student/:studentId', async (req, res) => {
 });
 
 // Route to save or update attendance
+// Route to save or update attendance and display present/absent counts
 app.post('/attendance', async (req, res) => {
     const { date, subjectName, attendance } = req.body;
     if (!date || !subjectName || !attendance || attendance.length === 0) {
@@ -121,14 +122,22 @@ app.post('/attendance', async (req, res) => {
             }
         }));
 
-        res.json({ message: 'Attendance saved successfully' });
+        // Calculate present and absent counts
+        const presentCount = attendance.filter(record => record.status === 'present').length;
+        const absentCount = attendance.filter(record => record.status === 'absent').length;
+
+        res.json({
+            message: 'Attendance saved successfully',
+            presentCount,
+            absentCount
+        });
     } catch (err) {
         console.error('Error saving attendance:', err);
         res.status(500).json({ message: 'Error saving attendance', error: err.message });
     }
 });
-// Route to fetch attendance based on semester and date
-// Endpoint to retrieve attendance for a student by studentId and subjectName
+
+// Endpoint to retrieve total classes present and absent for a particular student by studentId and subjectName
 app.get('/attendance/:studentId/:subjectName', async (req, res) => {
     const { studentId, subjectName } = req.params;
 
@@ -147,12 +156,26 @@ app.get('/attendance/:studentId/:subjectName', async (req, res) => {
             return res.status(404).json({ message: 'No attendance records found for this student and subject.' });
         }
 
-        res.json(attendanceRecords);
+        // Calculate present and absent counts
+        const presentClasses = attendanceRecords.filter(record => record.status === 'present');
+        const absentClasses = attendanceRecords.filter(record => record.status === 'absent');
+
+        res.json({
+            studentId,
+            subjectName,
+            presentClasses: presentClasses.length,
+            absentClasses: absentClasses.length,
+            details: {
+                presentClasses: presentClasses,
+                absentClasses: absentClasses
+            }
+        });
     } catch (err) {
         console.error('Error fetching attendance:', err);
         res.status(500).json({ message: 'Error fetching attendance.' });
     }
 });
+
 
 
 
