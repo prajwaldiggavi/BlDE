@@ -358,89 +358,92 @@
             </div>
         </div>
     <script>
-    const BACKEND_URL = "https://blde-production.up.railway.app"; // Replace with your Railway backend URL
+const BACKEND_URL = "https://blde-production.up.railway.app"; // Replace with your Railway backend URL
 
-    // Fetch students based on the selected semester
-    async function fetchStudents() {
-        const semester = document.getElementById("classSelector").value;
-        const studentsList = document.getElementById("studentsList");
-        studentsList.innerHTML = '';
+// Fetch students based on the selected semester
+async function fetchStudents() {
+    const semester = document.getElementById("classSelector").value;
+    const studentsList = document.getElementById("studentsList");
+    studentsList.innerHTML = '';
 
-        if (!semester) {
-            alert("Please select a semester.");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${BACKEND_URL}/students/${semester}`);
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
-            const students = await response.json();
-            students.forEach(student => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    ${student.studentName} (ID: ${student.studentId})
-                    <div class="student-actions">
-                        <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
-                        <button class="absent-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, false)">Absent</button>
-                    </div>
-                `;
-                studentsList.appendChild(li);
-            });
-        } catch (error) {
-            console.error('Error fetching students:', error);
-            alert("Failed to fetch students.");
-        }
+    if (!semester) {
+        alert("Please select a semester.");
+        return;
     }
 
-    // Submit attendance for the selected date and subject
-    async function submitAttendance() {
-        const subjectName = document.getElementById("subjectName").value;
-        const dateInput = document.getElementById("attendanceDateInput").value;
-        const semester = document.getElementById("classSelector").value;
+    try {
+        const response = await fetch(`${BACKEND_URL}/students/${semester}`);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-        if (!subjectName || !dateInput || !semester) {
-            alert("Please fill all fields before submitting.");
-            return;
-        }
+        const students = await response.json();
+        students.forEach(student => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${student.studentName} (ID: ${student.studentId})
+                <div class="student-actions">
+                    <button class="present-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, true)">Present</button>
+                    <button class="absent-btn" data-roll="${student.studentId}" onclick="toggleAttendance(this, false)">Absent</button>
+                </div>
+            `;
+            studentsList.appendChild(li);
+        });
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        alert("Failed to fetch students.");
+    }
+}
 
-        const studentsList = document.querySelectorAll("#studentsList li");
-        const attendance = Array.from(studentsList).map(studentItem => {
-            const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
-            const isPresent = studentItem.querySelector(".present-btn").style.display === "none";
-            return { roll_number: rollNumber, status: isPresent ? "Present" : "Absent" };
+// Submit attendance for the selected date and subject
+async function submitAttendance() {
+    const subjectName = document.getElementById("subjectName").value;
+    const dateInput = document.getElementById("attendanceDateInput").value;
+    const semester = document.getElementById("classSelector").value;
+
+    if (!subjectName || !dateInput || !semester) {
+        alert("Please fill all fields before submitting.");
+        return;
+    }
+
+    const studentsList = document.querySelectorAll("#studentsList li");
+    const attendance = [];
+
+    studentsList.forEach(studentItem => {
+        const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
+        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Present" : "Absent";
+        attendance.push({ roll_number: rollNumber, status: isPresent });
+    });
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/attendance`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ date: dateInput, subjectName, attendance }),
         });
 
-        try {
-            const response = await fetch(`${BACKEND_URL}/attendance`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ date: dateInput, subjectName, attendance }),
-            });
+        if (!response.ok) throw new Error("Error saving attendance.");
 
-            if (!response.ok) throw new Error("Error saving attendance.");
-
-            alert("Attendance submitted successfully.");
-        } catch (error) {
-            console.error("Error submitting attendance:", error);
-            alert("Failed to submit attendance.");
-        }
+        alert("Attendance submitted successfully.");
+    } catch (error) {
+        console.error("Error submitting attendance:", error);
+        alert("Failed to submit attendance.");
     }
+}
 
-    // Toggle attendance status (Present/Absent)
-    function toggleAttendance(button, isPresent) {
-        const parentDiv = button.parentElement;
-        const presentButton = parentDiv.querySelector(".present-btn");
-        const absentButton = parentDiv.querySelector(".absent-btn");
+// Toggle attendance status (Present/Absent)
+function toggleAttendance(button, isPresent) {
+    const parentDiv = button.parentElement;
+    const presentButton = parentDiv.querySelector(".present-btn");
+    const absentButton = parentDiv.querySelector(".absent-btn");
 
-        if (isPresent) {
-            presentButton.style.display = "none";
-            absentButton.style.display = "inline-block";
-        } else {
-            presentButton.style.display = "inline-block";
-            absentButton.style.display = "none";
-        }
+    if (isPresent) {
+        presentButton.style.display = "none"; // Mark as present
+        absentButton.style.display = "inline-block"; // Mark as absent
+    } else {
+        presentButton.style.display = "inline-block"; // Show present button
+        absentButton.style.display = "none"; // Hide absent button
     }
+}
+
 </script>
 
     </body>
