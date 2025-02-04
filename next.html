@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,7 +8,7 @@
     <link rel="icon" type="image/png" href="img/IIITV_Logo_1x1_small.png">
     <link href='https://fonts.googleapis.com/css?family=Oxygen:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="n.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
     <style>
         .faculty-photo {
             max-width: 100%;
@@ -30,8 +29,7 @@
                 <div class="header-container">
                     <div>
                         <div class="logo-name">
-                            <div class="logo"><a href="index.html" title=""><img src="https://github.com/prajwaldiggavi/BlDE/blob/image/BLD.png?raw=true
-"
+                            <div class="logo"><a href="index.html" title=""><img src="img\BLD.png"
                                                                                  alt="logo"></a></div>
                             <div class="name">
                                 <a href="index.html" title="">
@@ -241,77 +239,73 @@
             </div>
         
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+             <script>
+        const serverUrl = 'https://blde-production.up.railway.app'; // Your Railway app URL
 
-<script>
-    const serverUrl = 'https://blde-production.up.railway.app'; // Updated Railway app URL
+        function addStudent() {
+            const studentId = $('#studentId').val();
+            const studentName = $('#studentName').val();
+            const semester = $('#semester').val();
+            const phone_number = $('#phone_number').val();
+            const email = $('#email').val();
+            const dob = $('#dob').val();
+            const gender = $('#gender').val();
 
-    function addStudent() {
-        const studentId = $('#studentId').val();
-        const studentName = $('#studentName').val();
-        const semester = $('#semester').val();
-        const phone_number = $('#phone_number').val();
-        const email = $('#email').val();
-        const dob = $('#dob').val();
-        const gender = $('#gender').val();
-
-        if (studentId && studentName && semester && phone_number && email && dob && gender) {
-            $.ajax({
-                url: `${serverUrl}/add-student`,  // Updated URL here
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ studentId, studentName, semester, phone_number, email, dob, gender }),
-                success: function(response) {
-                    alert(response);
-                    $('#studentForm')[0].reset(); // Clear the form
-                },
-                error: function(error) {
-                    alert('Error: ' + error.responseText);
-                }
-            });
-        } else {
-            alert('Please fill out all required fields.');
-        }
-    }
-
-    function showStudents() {
-        const semester = $('#showSemester').val();
-
-        if (semester) {
-            $.ajax({
-                url: `${serverUrl}/students/${semester}`,  // Updated URL here
-                type: 'GET',
-                success: function(students) {
-                    $('#studentList').empty();  // Clear previous list
-                    if (students.length > 0) {
-                        students.forEach(student => {
-                            $('#studentList').append(`
-                                <tr>
-                                    <td>${student.studentId}</td>
-                                    <td>${student.studentName}</td>
-                                    <td>${student.semester}</td>
-                                    <td>${student.phone_number}</td>
-                                    <td>${student.email}</td>
-                                    <td>${student.dob}</td>
-                                    <td>${student.gender}</td>
-                                </tr>
-                            `);
-                        });
-                    } else {
-                        $('#studentList').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
+            if (studentId && studentName && semester && phone_number && email && dob && gender) {
+                $.ajax({
+                    url: `${serverUrl}/add-student`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ studentId, studentName, semester, phone_number, email, dob, gender }),
+                    success: function(response) {
+                        alert(response);
+                        $('#studentForm')[0].reset(); // Clear the form
+                    },
+                    error: function(error) {
+                        alert('Error: ' + error.responseText);
                     }
-                },
-                error: function(error) {
-                    alert('Error: ' + error.responseText);
-                }
-            });
-        } else {
-            alert('Please select a semester.');
+                });
+            } else {
+                alert('Please fill out all required fields.');
+            }
         }
-    }
-</script>
 
+        function showStudents() {
+            const semester = $('#showSemester').val();
 
-
+            if (semester) {
+                $.ajax({
+                    url: `${serverUrl}/students/${semester}`,
+                    type: 'GET',
+                    success: function(students) {
+                        $('#studentList').empty();  // Clear previous list
+                        if (students.length > 0) {
+                            students.forEach(student => {
+                                $('#studentList').append(`
+                                    <tr>
+                                        <td>${student.studentId}</td>
+                                        <td>${student.studentName}</td>
+                                        <td>${student.semester}</td>
+                                        <td>${student.phone_number}</td>
+                                        <td>${student.email}</td>
+                                        <td>${student.dob}</td>
+                                        <td>${student.gender}</td>
+                                    </tr>
+                                `);
+                            });
+                        } else {
+                            $('#studentList').append('<tr><td colspan="7">No students found for this semester.</td></tr>');
+                        }
+                    },
+                    error: function(error) {
+                        alert('Error: ' + error.responseText);
+                    }
+                });
+            } else {
+                alert('Please select a semester.');
+            }
+        }
+    </script>
         </body>
         
         <!-- /Content wrapper -->
