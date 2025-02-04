@@ -128,24 +128,32 @@ app.post('/attendance', async (req, res) => {
     }
 });
 // Route to fetch attendance based on semester and date
-app.get('/attendance/:semester/:date', async (req, res) => {
-    const { semester, date } = req.params;
+// Endpoint to retrieve attendance for a student by studentId and subjectName
+app.get('/attendance/:studentId/:subjectName', async (req, res) => {
+    const { studentId, subjectName } = req.params;
 
-    if (!semester || !date) {
-        return res.status(400).json({ message: 'Semester and Date are required.' });
+    if (!studentId || !subjectName) {
+        return res.status(400).json({ message: 'Student ID and Subject Name are required.' });
     }
 
     try {
-        // Fetch attendance for the given semester and date
-        const attendanceRecords = await executeQuery('SELECT * FROM attendance WHERE date = ? AND semester = ?', [date, semester]);
-        
-        // Return the attendance records
+        // Fetch the attendance records for the given student and subject
+        const attendanceRecords = await executeQuery(
+            'SELECT date, status FROM attendance WHERE studentId = ? AND subjectName = ?',
+            [studentId, subjectName]
+        );
+
+        if (attendanceRecords.length === 0) {
+            return res.status(404).json({ message: 'No attendance records found for this student and subject.' });
+        }
+
         res.json(attendanceRecords);
     } catch (err) {
         console.error('Error fetching attendance:', err);
-        res.status(500).json({ message: 'Error fetching attendance', error: err.message });
+        res.status(500).json({ message: 'Error fetching attendance.' });
     }
 });
+
 
 
 app.listen(port, () => {
