@@ -415,8 +415,8 @@ async function submitAttendance() {
 
     studentsList.forEach(studentItem => {
         const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
-        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Present" : "Absent";
-        attendance.push({ roll_number: rollNumber, status: isPresent });
+        const isPresent = studentItem.querySelector(".present-btn").style.display === "none";
+        attendance.push({ roll_number: rollNumber, status: isPresent ? "Present" : "Absent" });
     });
 
     try {
@@ -429,12 +429,13 @@ async function submitAttendance() {
         if (!response.ok) throw new Error("Error saving attendance.");
 
         alert("Attendance submitted successfully.");
-        updateAttendanceStats(semester, subjectName);
+        updateAttendanceStats(semester, subjectName, dateInput);
     } catch (error) {
         console.error("Error submitting attendance:", error);
         alert("Failed to submit attendance.");
     }
 }
+
 
 // Update attendance statistics (Total Students, Present Count, Absent Count)
 // Submit attendance for the selected date and subject
