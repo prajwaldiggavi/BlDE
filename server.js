@@ -1,7 +1,6 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
 
 const app = express();
 const port = 8080;
@@ -46,15 +45,6 @@ handleDisconnect();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Email Configuration
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'diggaviprajwal55@gmail.com',
-        pass: 'bgnm kbga xkew pgpb' // Use your Google App Password
-    }
-});
 
 // Helper Function: Execute MySQL Queries
 const executeQuery = (query, params) => {
@@ -109,7 +99,7 @@ app.delete('/delete-student/:studentId', async (req, res) => {
     }
 });
 
-// Route to save or update attendance and send email notifications
+// Route to save or update attendance
 app.post('/attendance', async (req, res) => {
     const { date, subjectName, attendance } = req.body;
     if (!date || !subjectName || !attendance || attendance.length === 0) {
@@ -131,19 +121,7 @@ app.post('/attendance', async (req, res) => {
             }
         }));
 
-        // Fetch students and send email notifications
-        const students = await executeQuery('SELECT email, studentName, studentId FROM students WHERE studentId IN (?)', [rollNumbers]);
-        await Promise.all(students.map(student => {
-            const mailOptions = {
-                from: 'diggaviprajwal55@gmail.com',
-                to: student.email,
-                subject: 'Attendance Status',
-                text: `Dear ${student.studentName},\n\nYour attendance has been updated for ${subjectName} on ${date}.\n\nRegards,\nDEPT OF ISE BLDEACET`
-            };
-            return transporter.sendMail(mailOptions);
-        }));
-
-        res.json({ message: 'Attendance saved and emails sent successfully' });
+        res.json({ message: 'Attendance saved successfully' });
     } catch (err) {
         console.error('Error saving attendance:', err);
         res.status(500).json({ message: 'Error saving attendance', error: err.message });
