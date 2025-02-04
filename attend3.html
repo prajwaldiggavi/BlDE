@@ -437,9 +437,49 @@ async function submitAttendance() {
 }
 
 // Update attendance statistics (Total Students, Present Count, Absent Count)
-async function updateAttendanceStats(semester, subjectName) {
+// Submit attendance for the selected date and subject
+async function submitAttendance() {
+    const subjectName = document.getElementById("subjectName").value;
+    const dateInput = document.getElementById("attendanceDateInput").value;
+    const semester = document.getElementById("classSelector").value;
+
+    if (!subjectName || !dateInput || !semester) {
+        alert("Please fill all fields before submitting.");
+        return;
+    }
+
+    const studentsList = document.querySelectorAll("#studentsList li");
+    const attendance = [];
+
+    studentsList.forEach(studentItem => {
+        const rollNumber = studentItem.querySelector(".present-btn").dataset.roll;
+        const isPresent = studentItem.querySelector(".present-btn").style.display === "none" ? "Present" : "Absent";
+        attendance.push({ roll_number: rollNumber, status: isPresent });
+    });
+
     try {
-        const response = await fetch(`${BACKEND_URL}/attendance/stats/${semester}/${subjectName}`);
+        const response = await fetch(`${BACKEND_URL}/attendance`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ date: dateInput, subjectName, semester, attendance }),
+        });
+
+        if (!response.ok) throw new Error("Error saving attendance.");
+
+        alert("Attendance submitted successfully.");
+
+        // Fetch and display the updated statistics for this specific session
+        updateAttendanceStats(semester, subjectName, dateInput);
+    } catch (error) {
+        console.error("Error submitting attendance:", error);
+        alert("Failed to submit attendance.");
+    }
+}
+
+// Update attendance statistics for the current session (specific date, subject)
+async function updateAttendanceStats(semester, subjectName, date) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/attendance/stats/${semester}/${subjectName}/${date}`);
         if (!response.ok) throw new Error(`Error fetching attendance statistics: ${response.status}`);
 
         const stats = await response.json();
