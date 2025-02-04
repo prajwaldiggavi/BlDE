@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
@@ -6,11 +5,11 @@ const cors = require('cors');
 const app = express();
 const port = 8080;
 
-// Enable CORS
+// Enable CORS for all routes globally
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',
-    methods: ['GET', 'POST', 'DELETE'],
-    allowedHeaders: ['Content-Type']
+    origin: 'https://bl-de.vercel.app', // Only allow requests from this origin
+    methods: ['GET', 'POST', 'DELETE'], // Allowed methods
+    allowedHeaders: ['Content-Type'], // Allowed headers
 }));
 
 // MySQL connection and automatic reconnection
@@ -44,6 +43,7 @@ function handleDisconnect() {
 }
 handleDisconnect();
 
+// Middleware to parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -100,7 +100,6 @@ app.delete('/delete-student/:studentId', async (req, res) => {
     }
 });
 
-// Route to save or update attendance
 // Route to save or update attendance and generate attendance report
 app.post('/attendance', async (req, res) => {
     const { date, subjectName, semester, attendance } = req.body;
@@ -170,10 +169,7 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     }
 });
 
-});
-
-
-
+// Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
