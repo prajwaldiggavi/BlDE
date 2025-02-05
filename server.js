@@ -193,13 +193,14 @@ app.get('/attendance/stats/:semester/:subjectName/:date', async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance statistics.' });
     }
 });
-const PDFDocument = require('pdfkit');
+const PDFDocument = require('pdfkit-table'); // Import pdfkit-table for structured tables
 const fs = require('fs');
 
 const exportAttendancePDF = async (req, res) => {
     const { semester, subjectName, date } = req.params;
+
     try {
-        // Fetch attendance records
+        // Fetch attendance records from your database (replace with MongoDB if needed)
         const attendanceRecords = await executeQuery(
             'SELECT roll_number, status FROM attendance WHERE semester = ? AND subjectName = ? AND date = ?',
             [semester, subjectName, date]
@@ -209,39 +210,56 @@ const exportAttendancePDF = async (req, res) => {
             return res.status(404).json({ message: 'No attendance records found.' });
         }
 
-        // Count total, present, and absent students
+        // Count attendance statistics
         const totalStudents = attendanceRecords.length;
         const presentCount = attendanceRecords.filter(record => record.status === 'Present').length;
         const absentCount = totalStudents - presentCount;
 
         // Create a PDF document
-        const doc = new PDFDocument();
+        const doc = new PDFDocument({ margin: 50 });
+
+        // Set response headers for PDF download
         res.setHeader('Content-Disposition', `attachment; filename=Attendance_${subjectName}_${date}.pdf`);
         res.setHeader('Content-Type', 'application/pdf');
         doc.pipe(res);
 
-        // Title
-        doc.fontSize(16).text(`Attendance Report`, { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(12).text(`Subject: ${subjectName}`);
-        doc.text(`Date: ${date}`);
-        doc.text(`Semester: ${semester}`);
-        doc.moveDown();
+        // 🏷️ **Title & Summary**
+        doc
+            .fontSize(18)
+            .text('Attendance Report', { align: 'center', underline: true })
+            .moveDown(0.5);
 
-        // Table Header
-        doc.fontSize(12).text(`Roll Number       Status`, { underline: true });
-        doc.moveDown();
+        doc
+            .fontSize(12)
+            .text(`📚 Subject: ${subjectName}`, { continued: true })
+            .text(`📅 Date: ${date}`, { align: 'right' })
+            .text(`🎓 Semester: ${semester}`)
+            .moveDown(0.5);
 
-        // Attendance Data
-        attendanceRecords.forEach(record => {
-            doc.text(`${record.roll_number}             ${record.status}`);
-        });
+        // 📌 **Attendance Table Structure**
+        const table = {
+            headers: [
+                { label: "🎓 Roll Number", width: 150, align: "center" },
+                { label: "📌 Status", width: 150, align: "center" }
+            ],
+            rows: attendanceRecords.map(record => [
+                record.roll_number,
+                record.status === "Present" ? "✅ Present" : "❌ Absent"
+            ])
+        };
 
-        doc.moveDown();
-        doc.text(`Total Students: ${totalStudents}`);
-        doc.text(`Present: ${presentCount}`);
-        doc.text(`Absent: ${absentCount}`);
+        // ✍️ Draw the table
+        await doc.table(table, { width: 400 });
 
+        // 🏁 **Summary Section**
+        doc.moveDown(1);
+        doc
+            .fontSize(12)
+            .text(`👥 Total Students: ${totalStudents}`, { bold: true })
+            .text(`✅ Present: ${presentCount}`, { color: "green" })
+            .text(`❌ Absent: ${absentCount}`, { color: "red" });
+
+        // Finish writing to the PDF
         doc.end();
     } catch (err) {
         console.error('Error generating attendance PDF:', err);
@@ -249,8 +267,9 @@ const exportAttendancePDF = async (req, res) => {
     }
 };
 
-// Add this route to your existing server file
+// 🔗 Add this route to your Express server
 app.get('/export-attendance/:semester/:subjectName/:date', exportAttendancePDF);
+
 
 
 
