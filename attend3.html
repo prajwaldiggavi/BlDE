@@ -325,7 +325,8 @@
             
             <!-- Submit and Export Buttons -->
             <button type="submit" onclick="submitAttendance()">Submit Attendance</button>
-            <button type="button" onclick="exportAttendance()">Export Attendance</button>
+            <button onclick="exportAttendance()">Export Attendance</button>
+
             
             <!-- Attendance Statistics Section -->
             <div>
@@ -506,6 +507,39 @@ function toggleAttendance(button, isPresent) {
         presentButton.textContent = "Present";  // Set status to Present
     }
 }
+    // Export attendance as a PDF
+async function exportAttendance() {
+    const semester = document.getElementById("classSelector").value;
+    const subjectName = document.getElementById("subjectName").value;
+    const date = document.getElementById("attendanceDateInput").value;
+
+    if (!semester || !subjectName || !date) {
+        alert("Please select semester, subject, and date before exporting.");
+        return;
+    }
+
+    // Create the export URL
+    const exportUrl = `${BACKEND_URL}/export-attendance/${semester}/${subjectName}/${date}`;
+
+    // Trigger the file download
+    try {
+        const response = await fetch(exportUrl);
+        if (!response.ok) throw new Error("Error generating PDF.");
+
+        // Create a download link
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `Attendance_${subjectName}_${date}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error("Error exporting attendance:", error);
+        alert("Failed to export attendance.");
+    }
+}
+
 </script>
 
     </body>
