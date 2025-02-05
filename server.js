@@ -193,6 +193,65 @@ app.get('/attendance/stats/:semester/:subjectName/:date', async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance statistics.' });
     }
 });
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+
+const exportAttendancePDF = async (req, res) => {
+    const { semester, subjectName, date } = req.params;
+    try {
+        // Fetch attendance records
+        const attendanceRecords = await executeQuery(
+            'SELECT roll_number, status FROM attendance WHERE semester = ? AND subjectName = ? AND date = ?',
+            [semester, subjectName, date]
+        );
+
+        if (attendanceRecords.length === 0) {
+            return res.status(404).json({ message: 'No attendance records found.' });
+        }
+
+        // Count total, present, and absent students
+        const totalStudents = attendanceRecords.length;
+        const presentCount = attendanceRecords.filter(record => record.status === 'Present').length;
+        const absentCount = totalStudents - presentCount;
+
+        // Create a PDF document
+        const doc = new PDFDocument();
+        res.setHeader('Content-Disposition', `attachment; filename=Attendance_${subjectName}_${date}.pdf`);
+        res.setHeader('Content-Type', 'application/pdf');
+        doc.pipe(res);
+
+        // Title
+        doc.fontSize(16).text(`Attendance Report`, { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Subject: ${subjectName}`);
+        doc.text(`Date: ${date}`);
+        doc.text(`Semester: ${semester}`);
+        doc.moveDown();
+
+        // Table Header
+        doc.fontSize(12).text(`Roll Number       Status`, { underline: true });
+        doc.moveDown();
+
+        // Attendance Data
+        attendanceRecords.forEach(record => {
+            doc.text(`${record.roll_number}             ${record.status}`);
+        });
+
+        doc.moveDown();
+        doc.text(`Total Students: ${totalStudents}`);
+        doc.text(`Present: ${presentCount}`);
+        doc.text(`Absent: ${absentCount}`);
+
+        doc.end();
+    } catch (err) {
+        console.error('Error generating attendance PDF:', err);
+        res.status(500).json({ message: 'Error generating PDF report.' });
+    }
+};
+
+// Add this route to your existing server file
+app.get('/export-attendance/:semester/:subjectName/:date', exportAttendancePDF);
+
 
 
 // Start the server
