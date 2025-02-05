@@ -1,15 +1,16 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
+const PDFDocument = require('pdfkit');
 
 const app = express();
-const port = 8080;
+const port = 8080; // Define port
 
-// Enable CORS for all routes globally
+// Enable CORS for specific origin
 app.use(cors({
-    origin: 'https://bl-de.vercel.app', // Only allow requests from this origin
-    methods: ['GET', 'POST', 'DELETE'], // Allowed methods
-    allowedHeaders: ['Content-Type'], // Allowed headers
+    origin: 'https://bl-de.vercel.app',  // Allow requests from this specific origin
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
 }));
 
 // MySQL connection and automatic reconnection
@@ -26,7 +27,7 @@ function handleDisconnect() {
     dbConnection.connect(err => {
         if (err) {
             console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000);
+            setTimeout(handleDisconnect, 2000);  // Retry connection after 2 seconds
         } else {
             console.log('Connected to db as id ' + dbConnection.threadId);
         }
@@ -35,7 +36,7 @@ function handleDisconnect() {
     dbConnection.on('error', err => {
         console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
+            handleDisconnect();  // Reconnect if connection is lost
         } else {
             throw err;
         }
@@ -144,7 +145,6 @@ app.post('/attendance', async (req, res) => {
 });
 
 // Endpoint to retrieve attendance for a student by roll_number and subjectName
-// Fetch the attendance records for a specific student and subject
 app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     const { roll_number, subjectName } = req.params;
 
@@ -153,7 +153,6 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     }
 
     try {
-        // Fetch the attendance records for the given roll_number and subjectName
         const attendanceRecords = await executeQuery(
             'SELECT date, status, semester FROM attendance WHERE roll_number = ? AND subjectName = ?',
             [roll_number, subjectName]
@@ -170,33 +169,10 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     }
 });
 
-app.get('/attendance/stats/:semester/:subjectName/:date', async (req, res) => {
+// Endpoint to generate attendance report PDF
+app.get('/export-attendance/:semester/:subjectName/:date', async (req, res) => {
     const { semester, subjectName, date } = req.params;
 
-    try {
-        // Query for total students, present count, and absent count on a specific date
-        const totalStudentsQuery = 'SELECT COUNT(DISTINCT roll_number) as totalStudents FROM attendance WHERE semester = ? AND subjectName = ? AND date = ?';
-        const presentCountQuery = 'SELECT COUNT(*) as presentCount FROM attendance WHERE semester = ? AND subjectName = ? AND date = ? AND status = "Present"';
-        const absentCountQuery = 'SELECT COUNT(*) as absentCount FROM attendance WHERE semester = ? AND subjectName = ? AND date = ? AND status = "Absent"';
-
-        const totalStudents = await executeQuery(totalStudentsQuery, [semester, subjectName, date]);
-        const presentCount = await executeQuery(presentCountQuery, [semester, subjectName, date]);
-        const absentCount = await executeQuery(absentCountQuery, [semester, subjectName, date]);
-
-        res.json({
-            totalStudents: totalStudents[0].totalStudents,
-            presentCount: presentCount[0].presentCount,
-            absentCount: absentCount[0].absentCount
-        });
-    } catch (err) {
-        console.error('Error fetching attendance stats:', err);
-        res.status(500).json({ message: 'Error fetching attendance statistics.' });
-    }
-});
-const PDFDocument = require('pdfkit');
-
-const exportAttendancePDF = async (req, res) => {
-    const { semester, subjectName, date } = req.params;
     try {
         // Fetch attendance records
         const attendanceRecords = await executeQuery(
@@ -233,7 +209,7 @@ const exportAttendancePDF = async (req, res) => {
         // Draw table header
         doc.fontSize(12).fillColor('#444444').text('🎟️ Roll Number', 80, doc.y, { continued: true });
         doc.text('📊 Status', 300);
-        doc.moveTo(80, doc.y + 5).lineTo(500, doc.y + 5).stroke(); // Header underline
+        doc.moveTo(80, doc.y + 5).lineTo(500, doc.y + 5).stroke();  // Header underline
         doc.moveDown(1);
 
         // Attendance Data
@@ -258,16 +234,7 @@ const exportAttendancePDF = async (req, res) => {
         console.error('Error generating attendance PDF:', err);
         res.status(500).json({ message: 'Error generating PDF report.' });
     }
-};
-
-// Add this route to your existing server file
-app.get('/export-attendance/:semester/:subjectName/:date', exportAttendancePDF);
-
-
-   
-
-
-
+});
 
 // Start the server
 app.listen(port, () => {
