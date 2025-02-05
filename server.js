@@ -1,16 +1,15 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const PDFDocument = require('pdfkit');
 
 const app = express();
-const port = 8080; // Define port
+const port = 8080;
 
-// Enable CORS for specific origin
+// Enable CORS for all routes globally
 app.use(cors({
-    origin: 'https://bl-de.vercel.app',  // Allow requests from this specific origin
-    methods: ['GET', 'POST', 'DELETE'],
-    allowedHeaders: ['Content-Type'],
+    origin: 'https://bl-de.vercel.app', // Only allow requests from this origin
+    methods: ['GET', 'POST', 'DELETE'], // Allowed methods
+    allowedHeaders: ['Content-Type'], // Allowed headers
 }));
 
 // MySQL connection and automatic reconnection
@@ -27,7 +26,7 @@ function handleDisconnect() {
     dbConnection.connect(err => {
         if (err) {
             console.error('Error connecting to db: ' + err.stack);
-            setTimeout(handleDisconnect, 2000);  // Retry connection after 2 seconds
+            setTimeout(handleDisconnect, 2000);
         } else {
             console.log('Connected to db as id ' + dbConnection.threadId);
         }
@@ -36,7 +35,7 @@ function handleDisconnect() {
     dbConnection.on('error', err => {
         console.error('DB error: ', err);
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();  // Reconnect if connection is lost
+            handleDisconnect();
         } else {
             throw err;
         }
@@ -145,6 +144,7 @@ app.post('/attendance', async (req, res) => {
 });
 
 // Endpoint to retrieve attendance for a student by roll_number and subjectName
+// Fetch the attendance records for a specific student and subject
 app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     const { roll_number, subjectName } = req.params;
 
@@ -153,6 +153,7 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     }
 
     try {
+        // Fetch the attendance records for the given roll_number and subjectName
         const attendanceRecords = await executeQuery(
             'SELECT date, status, semester FROM attendance WHERE roll_number = ? AND subjectName = ?',
             [roll_number, subjectName]
@@ -169,72 +170,30 @@ app.get('/attendance/:roll_number/:subjectName', async (req, res) => {
     }
 });
 
-// Endpoint to generate attendance report PDF
-app.get('/export-attendance/:semester/:subjectName/:date', async (req, res) => {
-    const { semester, subjectName, date } = req.params;
+// Fetch attendance statistics (Total Students, Present, Absent Count) for a subject and semester
+app.get('/attendance/stats/:semester/:subjectName', async (req, res) => {
+    const { semester, subjectName } = req.params;
 
     try {
-        // Fetch attendance records
-        const attendanceRecords = await executeQuery(
-            'SELECT roll_number, status FROM attendance WHERE semester = ? AND subjectName = ? AND date = ?',
-            [semester, subjectName, date]
-        );
+        const totalStudentsQuery = 'SELECT COUNT(DISTINCT roll_number) as totalStudents FROM attendance WHERE semester = ? AND subjectName = ?';
+        const presentCountQuery = 'SELECT COUNT(*) as presentCount FROM attendance WHERE semester = ? AND subjectName = ? AND status = "Present"';
+        const absentCountQuery = 'SELECT COUNT(*) as absentCount FROM attendance WHERE semester = ? AND subjectName = ? AND status = "Absent"';
 
-        if (attendanceRecords.length === 0) {
-            return res.status(404).json({ message: 'No attendance records found.' });
-        }
+        const totalStudents = await executeQuery(totalStudentsQuery, [semester, subjectName]);
+        const presentCount = await executeQuery(presentCountQuery, [semester, subjectName]);
+        const absentCount = await executeQuery(absentCountQuery, [semester, subjectName]);
 
-        // Count total, present, and absent students
-        const totalStudents = attendanceRecords.length;
-        const presentCount = attendanceRecords.filter(record => record.status === 'Present').length;
-        const absentCount = totalStudents - presentCount;
-
-        // Create a PDF document
-        const doc = new PDFDocument({ margin: 50 });
-        res.setHeader('Content-Disposition', `attachment; filename=Attendance_${subjectName}_${date}.pdf`);
-        res.setHeader('Content-Type', 'application/pdf');
-        doc.pipe(res);
-
-        // Title
-        doc.fontSize(18).fillColor('#007BFF').text('📌 Attendance Report', { align: 'center', underline: true });
-        doc.moveDown(1);
-
-        // Metadata
-        doc.fontSize(12).fillColor('black');
-        doc.text(`📚 Subject: ${subjectName}`);
-        doc.text(`📅 Date: ${date}`);
-        doc.text(`🎓 Semester: ${semester}`);
-        doc.moveDown(1);
-
-        // Draw table header
-        doc.fontSize(12).fillColor('#444444').text('🎟️ Roll Number', 80, doc.y, { continued: true });
-        doc.text('📊 Status', 300);
-        doc.moveTo(80, doc.y + 5).lineTo(500, doc.y + 5).stroke();  // Header underline
-        doc.moveDown(1);
-
-        // Attendance Data
-        attendanceRecords.forEach(record => {
-            const statusEmoji = record.status === 'Present' ? '✅ Present' : '❌ Absent';
-            doc.fillColor('black').text(record.roll_number, 80, doc.y, { continued: true });
-            doc.text(statusEmoji, 300);
-            doc.moveDown(0.5);
+        res.json({
+            totalStudents: totalStudents[0].totalStudents,
+            presentCount: presentCount[0].presentCount,
+            absentCount: absentCount[0].absentCount
         });
-
-        doc.moveDown(1);
-        doc.fontSize(12).fillColor('#28A745').text(`✔️ Total Students: ${totalStudents}`);
-        doc.fontSize(12).fillColor('#17A2B8').text(`✅ Present: ${presentCount}`);
-        doc.fontSize(12).fillColor('#DC3545').text(`❌ Absent: ${absentCount}`);
-
-        // Footer
-        doc.moveDown(2);
-        doc.fontSize(10).fillColor('#888888').text('Generated by Attendance System ✅', { align: 'center' });
-
-        doc.end();
     } catch (err) {
-        console.error('Error generating attendance PDF:', err);
-        res.status(500).json({ message: 'Error generating PDF report.' });
+        console.error('Error fetching attendance stats:', err);
+        res.status(500).json({ message: 'Error fetching attendance statistics.' });
     }
 });
+
 
 // Start the server
 app.listen(port, () => {
